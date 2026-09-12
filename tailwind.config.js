@@ -1,0 +1,55 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class',
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        ayush: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
+        },
+        sage: {
+          50: '#f4f8f5',
+          100: '#e5efe8',
+          200: '#cddfd3',
+          300: '#a8c6b3',
+          400: '#7fa88f',
+          500: '#5c8c6f',
+          600: '#466f56',
+          700: '#385845',
+          800: '#2f4738',
+          900: '#273b30',
+        },
+        parchment: {
+          50: '#faf7f2',
+          100: '#f4ede2',
+          200: '#e9dcce',
+          300: '#dbc5b2',
+          400: '#c9aa92',
+          500: '#ba947a',
+        },
+        saffron: {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          500: '#f59e0b',
+          600: '#d97706',
+          700: '#b45309',
+        },
+        indigoNavy: {
+          900: '#0f172a',
+          800: '#1e293b',
+        }
+      },
+    },
+  },
+  plugins: [],
+}

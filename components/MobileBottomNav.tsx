@@ -1,0 +1,95 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useApp } from '@/lib/store';
+import {
+  LayoutDashboard,
+  Award,
+  Briefcase,
+  FileCheck2,
+  PlusCircle,
+  Users,
+  BookOpen,
+  GraduationCap,
+} from 'lucide-react';
+
+export default function MobileBottomNav() {
+  const pathname = usePathname();
+  const { role, isLoggedIn } = useApp();
+
+  if (!isLoggedIn) return null;
+
+  const studentLinks = [
+    { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/student/assessment', label: 'Assessment', icon: Award },
+    { href: '/student/internships', label: 'Matches', icon: Briefcase },
+    { href: '/student/portfolio', label: 'Portfolio', icon: FileCheck2 },
+  ];
+
+  const industryLinks = [
+    { href: '/industry/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/industry/post-internship', label: 'Post Role', icon: PlusCircle },
+    { href: '/industry/applicants', label: 'Candidates', icon: Users },
+  ];
+
+  const facultyLinks = [
+    { href: '/faculty/dashboard', label: 'FDP Hub', icon: BookOpen },
+    { href: '/student/dashboard', label: 'Mentees', icon: GraduationCap },
+  ];
+
+  const institutionLinks = [
+    { href: '/institution/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { href: '/institution/verify', label: 'Verify', icon: Award },
+    { href: '/institution/analytics', label: 'Analytics', icon: Briefcase },
+  ];
+
+  const links =
+    role === 'student'
+      ? studentLinks
+      : role === 'industry'
+      ? industryLinks
+      : role === 'faculty'
+      ? facultyLinks
+      : institutionLinks;
+
+  return (
+    <nav aria-label="Mobile Navigation Bar" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-emerald-900/10 dark:border-slate-800 shadow-2xl px-2 py-1.5 transition-colors">
+      <div className="flex items-center justify-around max-w-md mx-auto">
+        {links.map((link) => {
+          const Icon = link.icon;
+          const isActive = pathname === link.href;
+
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl min-h-[50px] transition-all relative ${
+                isActive
+                  ? 'text-emerald-700 dark:text-emerald-400 font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+            >
+              {isActive && (
+                <span className="absolute -top-1 w-6 h-1 bg-emerald-600 dark:bg-emerald-400 rounded-full animate-in fade-in zoom-in duration-200" />
+              )}
+              <div
+                className={`p-1 rounded-xl transition-all ${
+                  isActive
+                    ? 'bg-emerald-100/70 dark:bg-emerald-950/60 shadow-xs scale-105'
+                    : ''
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] tracking-tight mt-0.5 font-medium leading-none">
+                {link.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
