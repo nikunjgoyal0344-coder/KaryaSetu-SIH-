@@ -20,7 +20,7 @@ export default function HomePage() {
   const router = useRouter();
   const { login } = useApp();
 
-  const handleRoleLogin = (targetRole: 'student' | 'industry' | 'faculty') => {
+  const handleRoleLogin = (targetRole: 'student' | 'industry' | 'faculty' | 'institution') => {
     login(targetRole);
     if (targetRole === 'student') router.push('/student/dashboard');
     else if (targetRole === 'industry') router.push('/industry/dashboard');

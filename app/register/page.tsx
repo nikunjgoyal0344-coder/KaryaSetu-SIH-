@@ -9,7 +9,7 @@ import Link from 'next/link';
 export default function RegisterPage() {
   const router = useRouter();
   const { setRole } = useApp();
-  const [roleType, setRoleType] = useState<'student' | 'industry' | 'faculty'>('student');
+  const [roleType, setRoleType] = useState<'student' | 'industry' | 'faculty' | 'institution'>('student');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [organization, setOrganization] = useState('');

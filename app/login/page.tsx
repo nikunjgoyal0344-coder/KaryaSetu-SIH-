@@ -11,7 +11,7 @@ export default function LoginPage() {
   const { login } = useApp();
   const [email, setEmail] = useState('ananya.sharma@aiia.gov.in');
   const [password, setPassword] = useState('••••••••');
-  const [selectedRole, setSelectedRole] = useState<'student' | 'industry' | 'faculty'>('student');
+  const [selectedRole, setSelectedRole] = useState<'student' | 'industry' | 'faculty' | 'institution'>('student');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
