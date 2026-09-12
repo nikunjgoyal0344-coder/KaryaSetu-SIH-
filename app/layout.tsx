@@ -5,6 +5,7 @@ import RoleSwitcher from '@/components/RoleSwitcher';
 import Navbar from '@/components/Navbar';
 import LiveWallpaper from '@/components/LiveWallpaper';
 import MobileBottomNav from '@/components/MobileBottomNav';
+import { Analytics } from '@vercel/analytics/react';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -48,6 +49,7 @@ export default function RootLayout({
               </p>
             </div>
           </footer>
+          <Analytics />
         </AppProvider>
       </body>
     </html>
