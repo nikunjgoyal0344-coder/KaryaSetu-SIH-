@@ -17,6 +17,7 @@ import { Opportunity } from './matchingEngine';
 export type UserRole = 'student' | 'industry' | 'faculty' | 'institution';
 export type ThemeMode = 'light' | 'dark';
 export type WallpaperMode = 'live' | 'plain';
+export type Language = 'en' | 'hi';
 
 interface AppContextType {
   role: UserRole;
@@ -29,6 +30,8 @@ interface AppContextType {
   wallpaperMode: WallpaperMode;
   setWallpaperMode: (mode: WallpaperMode) => void;
   toggleWallpaperMode: () => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
   student: StudentProfile;
   setStudent: React.Dispatch<React.SetStateAction<StudentProfile>>;
   opportunities: Opportunity[];
@@ -62,8 +65,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [applications, setApplications] = useState<ApplicationItem[]>(INITIAL_APPLICATIONS);
   const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS);
   const [unverifiedStudents, setUnverifiedStudents] = useState<UnverifiedStudent[]>(INITIAL_UNVERIFIED_STUDENTS);
+  const [language, setLanguageState] = useState<Language>('en');
 
-  // Sync theme and wallpaper with document class and localStorage
+  // Sync theme, wallpaper and language with document and localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('karyasetu-theme') as ThemeMode;
     if (savedTheme) {
@@ -79,7 +83,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (savedWallpaper === 'live' || savedWallpaper === 'plain') {
       setWallpaperMode(savedWallpaper);
     }
+
+    const savedLang = localStorage.getItem('karyasetu-lang') as Language;
+    if (savedLang === 'hi' || savedLang === 'en') {
+      setLanguageState(savedLang);
+      document.documentElement.lang = savedLang;
+      if (savedLang === 'hi') {
+        document.cookie = 'googtrans=/en/hi; path=/';
+        try {
+          if (window.location.hostname) {
+            document.cookie = `googtrans=/en/hi; path=/; domain=${window.location.hostname}`;
+          }
+        } catch (e) {}
+      }
+    }
   }, []);
+
+  const setLanguage = (newLang: Language) => {
+    setLanguageState(newLang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('karyasetu-lang', newLang);
+      document.documentElement.lang = newLang;
+
+      const hostname = window.location.hostname;
+      if (newLang === 'hi') {
+        document.cookie = 'googtrans=/en/hi; path=/';
+        if (hostname) {
+          document.cookie = `googtrans=/en/hi; path=/; domain=${hostname}`;
+        }
+      } else {
+        document.cookie = 'googtrans=/en/en; path=/';
+        document.cookie = 'googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        if (hostname) {
+          document.cookie = `googtrans=/en/en; path=/; domain=${hostname}`;
+          document.cookie = `googtrans=; path=/; domain=${hostname}; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+        }
+      }
+
+      // If Google Translate element combo is available, trigger change event
+      const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
+      if (combo) {
+        combo.value = newLang;
+        combo.dispatchEvent(new Event('change'));
+      }
+    }
+  };
 
   const toggleTheme = () => {
     setTheme((prev) => {
@@ -288,6 +336,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         wallpaperMode,
         setWallpaperMode,
         toggleWallpaperMode,
+        language,
+        setLanguage,
         student,
         setStudent,
         opportunities,

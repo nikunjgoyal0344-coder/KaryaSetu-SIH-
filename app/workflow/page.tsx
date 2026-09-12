@@ -134,11 +134,11 @@ export default function WorkflowPage() {
           </div>
 
           {/* Tab Switcher */}
-          <div className="flex gap-2 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 self-start md:self-auto">
+          <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setActiveTab('visual')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center ${
                 activeTab === 'visual'
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'text-slate-300 hover:text-white'
@@ -149,7 +149,7 @@ export default function WorkflowPage() {
             <button
               type="button"
               onClick={() => setActiveTab('specification')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center ${
                 activeTab === 'specification'
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'text-slate-300 hover:text-white'

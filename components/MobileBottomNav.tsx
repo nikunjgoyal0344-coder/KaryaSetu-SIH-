@@ -17,32 +17,34 @@ import {
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
-  const { role, isLoggedIn } = useApp();
+  const { role, isLoggedIn, language } = useApp();
 
   if (!isLoggedIn) return null;
 
+  const isHi = language === 'hi';
+
   const studentLinks = [
-    { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/student/assessment', label: 'Assessment', icon: Award },
-    { href: '/student/internships', label: 'Matches', icon: Briefcase },
-    { href: '/student/portfolio', label: 'Portfolio', icon: FileCheck2 },
+    { href: '/student/dashboard', label: isHi ? 'डैशबोर्ड' : 'Dashboard', icon: LayoutDashboard },
+    { href: '/student/assessment', label: isHi ? 'मूल्यांकन' : 'Assessment', icon: Award },
+    { href: '/student/internships', label: isHi ? 'अवसर' : 'Matches', icon: Briefcase },
+    { href: '/student/portfolio', label: isHi ? 'पोर्टफोलियो' : 'Portfolio', icon: FileCheck2 },
   ];
 
   const industryLinks = [
-    { href: '/industry/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/industry/post-internship', label: 'Post Role', icon: PlusCircle },
-    { href: '/industry/applicants', label: 'Candidates', icon: Users },
+    { href: '/industry/dashboard', label: isHi ? 'डैशबोर्ड' : 'Dashboard', icon: LayoutDashboard },
+    { href: '/industry/post-internship', label: isHi ? 'पोस्ट करें' : 'Post Role', icon: PlusCircle },
+    { href: '/industry/applicants', label: isHi ? 'उम्मीदवार' : 'Candidates', icon: Users },
   ];
 
   const facultyLinks = [
-    { href: '/faculty/dashboard', label: 'FDP Hub', icon: BookOpen },
-    { href: '/student/dashboard', label: 'Mentees', icon: GraduationCap },
+    { href: '/faculty/dashboard', label: isHi ? 'एफडीपी' : 'FDP Hub', icon: BookOpen },
+    { href: '/student/dashboard', label: isHi ? 'विद्यार्थी' : 'Mentees', icon: GraduationCap },
   ];
 
   const institutionLinks = [
-    { href: '/institution/dashboard', label: 'Overview', icon: LayoutDashboard },
-    { href: '/institution/verify', label: 'Verify', icon: Award },
-    { href: '/institution/analytics', label: 'Analytics', icon: Briefcase },
+    { href: '/institution/dashboard', label: isHi ? 'अवलोकन' : 'Overview', icon: LayoutDashboard },
+    { href: '/institution/verify', label: isHi ? 'सत्यापन' : 'Verify', icon: Award },
+    { href: '/institution/analytics', label: isHi ? 'एनालिटिक्स' : 'Analytics', icon: Briefcase },
   ];
 
   const links =
@@ -55,7 +57,7 @@ export default function MobileBottomNav() {
       : institutionLinks;
 
   return (
-    <nav aria-label="Mobile Navigation Bar" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-emerald-900/10 dark:border-slate-800 shadow-2xl px-2 py-1.5 transition-colors">
+    <nav aria-label="Mobile Navigation Bar" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-emerald-900/10 dark:border-slate-800 shadow-2xl px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors">
       <div className="flex items-center justify-around max-w-md mx-auto">
         {links.map((link) => {
           const Icon = link.icon;

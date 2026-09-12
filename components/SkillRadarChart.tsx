@@ -30,7 +30,7 @@ export default function SkillRadarChart({ skills }: SkillRadarChartProps) {
   return (
     <div className="w-full h-[260px] sm:h-[320px] relative">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="72%" data={displaySkills}>
+        <RadarChart cx="50%" cy="50%" outerRadius="66%" data={displaySkills}>
           <PolarGrid stroke="#cbd5e1" strokeOpacity={0.6} />
           <PolarAngleAxis
             dataKey="subject"

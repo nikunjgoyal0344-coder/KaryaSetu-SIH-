@@ -1,398 +1,318 @@
 'use client';
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { useApp } from '@/lib/store';
-import ThemeToggle from '@/components/ThemeToggle';
-import WallpaperToggle from '@/components/WallpaperToggle';
+import Link from 'next/link';
 import {
   GraduationCap,
   Building2,
   BookOpenCheck,
-  Sparkles,
-  ArrowRight,
   ShieldCheck,
-  Cpu,
+  ArrowRight,
+  Sparkles,
+  Network,
+  CheckCircle2,
+  School,
+  Microscope,
+  FlaskConical,
+  Sprout,
+  HeartPulse,
+  Award,
 } from 'lucide-react';
-import Link from 'next/link';
 
 export default function HomePage() {
-  const router = useRouter();
-  const { login } = useApp();
-
-  const handleRoleLogin = (targetRole: 'student' | 'industry' | 'faculty' | 'institution') => {
-    login(targetRole);
-    if (targetRole === 'student') router.push('/student/dashboard');
-    else if (targetRole === 'industry') router.push('/industry/dashboard');
-    else if (targetRole === 'faculty') router.push('/faculty/dashboard');
-    else if (targetRole === 'institution') router.push('/institution/dashboard');
-  };
-
   return (
-    <div className="space-y-12 py-4">
-      {/* Top Banner with Wallpaper Switcher, Theme Switcher and Sign In / Log In Options on landing screen */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-          <span className="text-xs font-bold tracking-tight text-slate-800 dark:text-slate-200">
-            Centralized Academia–Industry Portal
-          </span>
-        </div>
-
-        {/* Action Controls: Live Wallpaper / Plain Switcher + Sign In & Log In Options + Theme Switcher */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
-          {/* Wallpaper Switcher (Live Wallpaper vs Plain) */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 hidden md:inline">
-              Wallpaper:
-            </span>
-            <WallpaperToggle />
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-3">
-            <Link
-              href="/login"
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
-            >
-              Log In
-            </Link>
-            <Link
-              href="/login"
-              className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition-all"
-            >
-              Sign In
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-800 pl-2 sm:pl-3">
-            <ThemeToggle showLabel />
-          </div>
-        </div>
-      </div>
-
-      {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-teal-950 to-emerald-950 text-white p-8 sm:p-12 shadow-2xl border border-emerald-900/40">
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Centralized Academia–Industry Bridge
+    <div className="w-full space-y-10 pb-8 transition-colors">
+      {/* 1. Hero Showcase */}
+      <section className="w-full pt-2 pb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Left Column */}
+          <div className="lg:col-span-7 flex flex-col items-start gap-4">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800 text-xs font-mono font-semibold">
+              <span>🇮🇳</span> HSSC, NSDC &amp; NSQF Level 6-8 Aligned
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-              Karya<span className="text-emerald-400">Setu</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
+              Bridging Academic Excellence with Healthcare &amp; Cross-Sector Demands
             </h1>
 
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              A unified, intelligent ecosystem connecting <strong>Students</strong>,{' '}
-              <strong>Academicians / Faculty</strong>, and <strong>Industries</strong> with transparent AI skill mapping,
-              verifiable digital portfolios, and dedicated AYUSH specialization.
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
+              Connecting scholars with Pharma R&amp;D, Agri-Tech, HealthTech Informatics, FMCG Nutraceuticals, and Clinical Hospital Networks through sovereign verifiable credentials.
             </p>
-          </div>
 
-          <div className="shrink-0 flex flex-col items-center">
-            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden border-3 border-amber-500/50 shadow-2xl shadow-amber-500/20 hover:scale-105 transition-all duration-300 bg-slate-900/40">
-              <img src="/logo.png" alt="KaryaSetu Emblem" className="w-full h-full object-cover scale-110" />
+            {/* 4 Live Telemetry Counters */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full my-2 bg-white dark:bg-slate-900/90 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+              <div className="space-y-0.5">
+                <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-blue-300 font-mono">12,480+</div>
+                <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Verified Scholars</div>
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-blue-300 font-mono">380+</div>
+                <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Colleges</div>
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-blue-300 font-mono">210+</div>
+                <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Multi-Sector</div>
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-lg sm:text-xl font-bold text-emerald-800 dark:text-emerald-400 font-mono">89.4%</div>
+                <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Placement Rate</div>
+              </div>
             </div>
-            <span className="text-[10px] sm:text-[11px] text-amber-300/90 font-bold uppercase tracking-widest mt-2 font-mono">
-              Skills • Internships • Careers
-            </span>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-2 w-full sm:w-auto">
+              <Link
+                href="/login?role=student"
+                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 min-h-[44px]"
+              >
+                <span>Enter Students Portal</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/workflow"
+                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 font-semibold text-xs sm:text-sm transition-all border border-slate-200/90 dark:border-slate-700 shadow-2xs flex items-center justify-center gap-2 min-h-[44px]"
+              >
+                <Network className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                <span>Explore Architecture Map</span>
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Background Decorative Glow */}
-        <div className="absolute top-0 right-0 -mt-16 -mr-16 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
-      </div>
-
-      {/* Direct Login Options Section */}
-      <div className="space-y-6">
-        <div className="text-center max-w-xl mx-auto space-y-2">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Select Your Portal to Enter
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Choose your stakeholder role to access your dedicated dashboard
-          </p>
-        </div>
-
-        {/* 4 Dedicated Stakeholder Login Cards with Eye-Friendly Non-Glare Surfaces */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* 1. Student Login Card */}
-          <div className="bg-white dark:bg-slate-900/90 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_6px_16px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-emerald-300/80 dark:hover:border-slate-700 transition-all flex flex-col justify-between space-y-5">
-            <div className="space-y-3">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-center font-bold shadow-2xs">
-                <GraduationCap className="w-5 h-5" />
+          {/* Right Column: Floating Digital Skill Passport Preview Card */}
+          <div className="lg:col-span-5 w-full">
+            <div className="relative flex flex-col items-center justify-center p-5 sm:p-8 bg-white dark:bg-slate-900/95 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+              <div className="absolute -top-3 px-3 py-1 rounded-full bg-emerald-800 text-white text-[11px] font-mono font-semibold tracking-wider flex items-center gap-1.5 shadow-sm">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Sovereign Attestation Grid</span>
               </div>
 
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800">
-                  Student Portal
-                </span>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-2">
-                  AYUSH Scholars
+              {/* Mandala Emblem Seal */}
+              <div className="relative w-44 h-44 sm:w-56 sm:h-56 md:w-64 md:h-64 my-4 rounded-full border-4 border-amber-400/50 p-2 bg-gradient-to-r from-[#FF9933]/15 via-white dark:via-slate-800 to-[#138808]/15 shadow-md flex items-center justify-center overflow-hidden shrink-0">
+                <img
+                  src="/logo.png"
+                  alt="KaryaSetu Official Mandala Emblem"
+                  className="w-full h-full object-cover rounded-full scale-105"
+                />
+              </div>
+
+              <div className="text-center space-y-1 mt-1">
+                <h3 className="font-bold text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight">
+                  KaryaSetu National Platform
                 </h3>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                  Assess clinical competencies, discover AI-matched internships, track applications, and generate a verified digital portfolio.
+                <p className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  National Digital Infrastructure • Ayush &amp; Life Sciences Grid
                 </p>
               </div>
 
-              {/* Portal Profile Preview */}
-              <div className="p-2.5 bg-slate-50/90 dark:bg-slate-800/40 rounded-xl border border-slate-200/70 dark:border-slate-700/60 text-xs space-y-1">
-                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 text-[11px]">
-                  <span>Featured Scholar:</span>
-                  <strong className="text-slate-900 dark:text-slate-100">Ananya Sharma</strong>
+              {/* Grid Badges */}
+              <div className="grid grid-cols-3 gap-2 w-full mt-5 pt-4 border-t border-slate-200/70 dark:border-slate-800 text-center font-mono text-[11px]">
+                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex flex-col items-center gap-1 border border-slate-100 dark:border-slate-800">
+                  <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">DigiLocker</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">Ready</span>
                 </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                  AIIA New Delhi • BAMS Final Year
+                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex flex-col items-center gap-1 border border-slate-100 dark:border-slate-800">
+                  <Award className="w-4 h-4 text-blue-700 dark:text-blue-400" />
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">NSQF L6-8</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">Aligned</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Both Sign In and Log In Option Buttons */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => handleRoleLogin('student')}
-                className="py-2 px-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-200/90 dark:border-slate-700 transition-all text-center shadow-2xs"
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleLogin('student')}
-                className="py-2 px-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-1 transition-all text-center"
-              >
-                <span>Sign In</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-
-          {/* 2. Industry Login Card */}
-          <div className="bg-white dark:bg-slate-900/90 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_6px_16px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between space-y-5">
-            <div className="space-y-3">
-              <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center font-bold shadow-2xs">
-                <Building2 className="w-5 h-5" />
-              </div>
-
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700">
-                  Industry Portal
-                </span>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-2">
-                  Recruiters & Pharma
-                </h3>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                  Publish internships with skill weights, review pre-screened talent pre-ranked by compatibility scores, and shortlist.
-                </p>
-              </div>
-
-              {/* Portal Profile Preview */}
-              <div className="p-2.5 bg-slate-50/90 dark:bg-slate-800/40 rounded-xl border border-slate-200/70 dark:border-slate-700/60 text-xs space-y-1">
-                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 text-[11px]">
-                  <span>Partner Recruiter:</span>
-                  <strong className="text-slate-900 dark:text-slate-100 truncate">Dr. V. Malhotra</strong>
-                </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                  Dabur Research Foundation
+                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex flex-col items-center gap-1 border border-slate-100 dark:border-slate-800">
+                  <HeartPulse className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">AyushGrid</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">Secure</span>
                 </div>
               </div>
-            </div>
-
-            {/* Both Sign In and Log In Option Buttons */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => handleRoleLogin('industry')}
-                className="py-2 px-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-200/90 dark:border-slate-700 transition-all text-center shadow-2xs"
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleLogin('industry')}
-                className="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-1 transition-all text-center"
-              >
-                <span>Sign In</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-
-          {/* 3. Faculty Login Card */}
-          <div className="bg-white dark:bg-slate-900/90 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_6px_16px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-amber-300/80 dark:hover:border-slate-700 transition-all flex flex-col justify-between space-y-5">
-            <div className="space-y-3">
-              <div className="w-11 h-11 rounded-2xl bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-100 dark:border-amber-900/50 flex items-center justify-center font-bold shadow-2xs">
-                <BookOpenCheck className="w-5 h-5" />
-              </div>
-
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200/70 dark:border-amber-800">
-                  Faculty Portal
-                </span>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-2">
-                  Academicians
-                </h3>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                  Discover AICTE/UGC recognized FDPs, consultancies, and endorse student practical skills to build trust.
-                </p>
-              </div>
-
-              {/* Portal Profile Preview */}
-              <div className="p-2.5 bg-slate-50/90 dark:bg-slate-800/40 rounded-xl border border-slate-200/70 dark:border-slate-700/60 text-xs space-y-1">
-                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 text-[11px]">
-                  <span>Faculty Lead:</span>
-                  <strong className="text-slate-900 dark:text-slate-100 truncate">Dr. R. Mishra</strong>
-                </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                  Assoc. Professor, Dravyaguna (AIIA)
-                </div>
-              </div>
-            </div>
-
-            {/* Both Sign In and Log In Option Buttons */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => handleRoleLogin('faculty')}
-                className="py-2 px-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-200/90 dark:border-slate-700 transition-all text-center shadow-2xs"
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleLogin('faculty')}
-                className="py-2 px-2.5 rounded-xl bg-amber-800 hover:bg-amber-900 dark:bg-amber-700 dark:hover:bg-amber-600 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-1 transition-all text-center"
-              >
-                <span>Sign In</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-
-          {/* 4. Institution Login Card */}
-          <div className="bg-white dark:bg-slate-900/90 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_6px_16px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between space-y-5">
-            <div className="space-y-3">
-              <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center font-bold shadow-2xs">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800">
-                  Institution Portal
-                </span>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-2">
-                  Colleges & Admins
-                </h3>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                  Verify student academic enrollment, validate DigiLocker credentials, and track institutional placement telemetry.
-                </p>
-              </div>
-
-              {/* Portal Profile Preview */}
-              <div className="p-2.5 bg-slate-50/90 dark:bg-slate-800/40 rounded-xl border border-slate-200/70 dark:border-slate-700/60 text-xs space-y-1">
-                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300 text-[11px]">
-                  <span>Dean / Admin:</span>
-                  <strong className="text-slate-900 dark:text-slate-100 truncate">Dr. Sujata Kadam</strong>
-                </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                  Dean of Academics, AIIA New Delhi
-                </div>
-              </div>
-            </div>
-
-            {/* Both Sign In and Log In Option Buttons */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => handleRoleLogin('institution')}
-                className="py-2 px-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-200/90 dark:border-slate-700 transition-all text-center shadow-2xs"
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleLogin('institution')}
-                className="py-2 px-2.5 rounded-xl bg-blue-800 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-1 transition-all text-center"
-              >
-                <span>Sign In</span>
-                <ArrowRight className="w-3 h-3" />
-              </button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Interactive System Workflow Banner */}
-      <div className="p-6 bg-slate-900 text-white rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-800">
-        <div className="space-y-1.5 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[11px] font-semibold uppercase tracking-wider border border-emerald-500/20">
-            KaryaSetu - System WorkFlow
-          </div>
-          <h3 className="text-lg font-bold">
-            Explore the Complete End-to-End System Architecture
-          </h3>
-          <p className="text-xs text-slate-300 max-w-2xl">
-            Inspect all 6 workflow blocks: User Journey, Core Processing, Opportunity Flow, Industry Actions, Faculty Actions, and Institution Actions.
-          </p>
-        </div>
-        <Link
-          href="/workflow"
-          className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-md flex items-center gap-2 shrink-0"
-        >
-          <span>Open Interactive Workflow Map</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-
-      {/* Registration Invitation */}
-      <div className="p-5 bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200/90 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-700 dark:text-slate-300 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-        <div className="flex items-center gap-2.5">
-          <ShieldCheck className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
-          <span className="text-slate-600 dark:text-slate-300 font-medium">
-            Verified institutional gateway aligning academia with Healthcare Sector Skill Council benchmarks.
+      {/* 3. National Partner Logo Marquee */}
+      <section className="w-full py-5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-y border-slate-200/80 dark:border-slate-800 rounded-3xl overflow-hidden shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 mb-3 text-center">
+          <span className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 tracking-wider font-semibold">
+            Trusted National Ecosystem Partners &amp; Autonomous Bodies
           </span>
         </div>
-        <Link
-          href="/register"
-          className="text-emerald-800 dark:text-emerald-400 font-bold hover:underline shrink-0"
-        >
-          Create New Institutional Account →
-        </Link>
-      </div>
 
-      {/* Core Innovation Highlights with Eye-Friendly Nature Palettes */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-        <div className="bg-white dark:bg-slate-900/90 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-2">
-          <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center font-bold">
-            <Cpu className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+        <div className="relative w-full overflow-hidden">
+          <div className="animate-marquee flex items-center gap-10 sm:gap-14 whitespace-nowrap text-slate-700 dark:text-slate-300 font-semibold text-xs sm:text-sm">
+            <div className="flex items-center gap-2"><School className="w-4 h-4 text-emerald-800 dark:text-emerald-400" /> Ministry of Ayush</div>
+            <div className="flex items-center gap-2"><Building2 className="w-4 h-4 text-blue-800 dark:text-blue-400" /> AIIA New Delhi</div>
+            <div className="flex items-center gap-2"><Award className="w-4 h-4 text-amber-700 dark:text-amber-400" /> HSSC &amp; NSDC</div>
+            <div className="flex items-center gap-2"><GraduationCap className="w-4 h-4 text-indigo-800 dark:text-indigo-400" /> AICTE &amp; SIH</div>
+            <div className="flex items-center gap-2"><Microscope className="w-4 h-4 text-rose-800 dark:text-rose-400" /> CSIR-CDRI</div>
+            <div className="flex items-center gap-2"><FlaskConical className="w-4 h-4 text-teal-800 dark:text-teal-400" /> Dabur Research Foundation</div>
+            <div className="flex items-center gap-2"><Sprout className="w-4 h-4 text-emerald-700 dark:text-emerald-400" /> ITC Agri-Business</div>
+            <div className="flex items-center gap-2"><HeartPulse className="w-4 h-4 text-sky-800 dark:text-sky-400" /> Tata HealthTech</div>
+            <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" /> Himalaya Wellness</div>
+
+            {/* Duplicate for infinite marquee loop */}
+            <div className="flex items-center gap-2"><School className="w-4 h-4 text-emerald-800 dark:text-emerald-400" /> Ministry of Ayush</div>
+            <div className="flex items-center gap-2"><Building2 className="w-4 h-4 text-blue-800 dark:text-blue-400" /> AIIA New Delhi</div>
+            <div className="flex items-center gap-2"><Award className="w-4 h-4 text-amber-700 dark:text-amber-400" /> HSSC &amp; NSDC</div>
+            <div className="flex items-center gap-2"><GraduationCap className="w-4 h-4 text-indigo-800 dark:text-indigo-400" /> AICTE &amp; SIH</div>
+            <div className="flex items-center gap-2"><Microscope className="w-4 h-4 text-rose-800 dark:text-rose-400" /> CSIR-CDRI</div>
+            <div className="flex items-center gap-2"><FlaskConical className="w-4 h-4 text-teal-800 dark:text-teal-400" /> Dabur Research Foundation</div>
+            <div className="flex items-center gap-2"><Sprout className="w-4 h-4 text-emerald-700 dark:text-emerald-400" /> ITC Agri-Business</div>
+            <div className="flex items-center gap-2"><HeartPulse className="w-4 h-4 text-sky-800 dark:text-sky-400" /> Tata HealthTech</div>
+            <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" /> Himalaya Wellness</div>
           </div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Explainable AI Matching</h3>
-          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-            Transparent scoring model: 45% Skill match + 20% Proficiency + 15% Interest + 10% Mode + 10% Eligibility.
+        </div>
+      </section>
+
+      {/* 4. Four Stakeholder Gateways */}
+      <section className="w-full py-4">
+        <div className="text-center max-w-2xl mx-auto mb-8 space-y-1.5">
+          <span className="text-[11px] font-mono uppercase text-emerald-800 dark:text-emerald-300 font-semibold tracking-wider bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200/80 dark:border-emerald-800">
+            Secure Role Portals
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-1">
+            Multi-Role Sovereignty Gateways
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+            Select your designated stakeholder profile for DigiLocker authenticated sessions.
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900/90 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-2">
-          <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center font-bold">
-            <BookOpenCheck className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Card 1: Students Portal */}
+          <div className="bg-white dark:bg-slate-900/90 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_6px_16px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-emerald-300/80 dark:hover:border-slate-700 transition-all flex flex-col justify-between space-y-4">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 flex items-center justify-center mb-4 border border-emerald-100 dark:border-emerald-900/50">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2">Students Portal</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Diagnostics, gap analysis, digital skill passports, and 1-click internship applications across verified hospital and lab networks.
+              </p>
+            </div>
+            <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <Link
+                href="/login?role=student"
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-center border border-slate-200 dark:border-slate-700 min-h-[40px] flex items-center justify-center"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/register?role=student"
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-white bg-emerald-800 hover:bg-emerald-900 shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[40px]"
+              >
+                <span>Sign In</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Faculty-Centric Module</h3>
-          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-            Solves faculty vacancies and outdated curriculums through accredited industry FDPs and skill endorsements.
-          </p>
-        </div>
 
-        <div className="bg-white dark:bg-slate-900/90 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-2">
-          <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center font-bold">
-            <ShieldCheck className="w-4 h-4 text-blue-700 dark:text-blue-400" />
+          {/* Card 2: Industry & Corporate Partners */}
+          <div className="bg-white dark:bg-slate-900/90 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_6px_16px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between space-y-4">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center mb-4 border border-slate-200/80 dark:border-slate-700">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2">Industry &amp; Corporate Partners</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Post weighted skill internships, review pre-screened talent, shortlist candidates, and manage automated MoAs.
+              </p>
+            </div>
+            <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <Link
+                href="/login?role=industry"
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-center border border-slate-200 dark:border-slate-700 min-h-[40px] flex items-center justify-center"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/register?role=industry"
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[40px]"
+              >
+                <span>Sign In</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">HSSC & AYUSH Taxonomy</h3>
-          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-            Official Qualification Packs for Panchakarma, Dravyaguna herbology, Ahara dietetics, and AyushGrid EHR.
-          </p>
+
+          {/* Card 3: Academicians & Faculty */}
+          <div className="bg-white dark:bg-slate-900/90 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_6px_16px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-amber-300/80 dark:hover:border-slate-700 transition-all flex flex-col justify-between space-y-4">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 flex items-center justify-center mb-4 border border-amber-100 dark:border-amber-900/50">
+                <BookOpenCheck className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2">Academicians &amp; Faculty</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Industry sabbatical marketplace, UGC/AICTE accredited FDPs, and official student skill endorsements.
+              </p>
+            </div>
+            <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <Link
+                href="/login?role=faculty"
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-center border border-slate-200 dark:border-slate-700 min-h-[40px] flex items-center justify-center"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/register?role=faculty"
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-white bg-amber-800 hover:bg-amber-900 shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[40px]"
+              >
+                <span>Sign In</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 4: Institutions & Registrars */}
+          <div className="bg-white dark:bg-slate-900/90 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_6px_16px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between space-y-4">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 flex items-center justify-center mb-4 border border-blue-100 dark:border-blue-900/50">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2">Institutions &amp; Registrars</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Student enrollment validation queue, DigiLocker verification, and NAAC/NIRF placement analytics tracking.
+              </p>
+            </div>
+            <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <Link
+                href="/login?role=institution"
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-center border border-slate-200 dark:border-slate-700 min-h-[40px] flex items-center justify-center"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/register?role=institution"
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-white bg-blue-900 hover:bg-blue-950 shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[40px]"
+              >
+                <span>Sign In</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* 5. Interactive System Workflow Banner */}
+      <section className="w-full py-4">
+        <div className="bg-slate-900 text-white rounded-3xl p-8 relative overflow-hidden shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-800">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="space-y-2 max-w-2xl relative z-10 text-center md:text-left">
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-mono uppercase tracking-wider">
+              System Architecture State
+            </div>
+            <h3 className="text-2xl font-bold tracking-tight">
+              Interactive Workflow &amp; Accreditation Pipeline
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Trace candidate telemetry from national diagnostic intake to final DigiLocker credential minting and verified enterprise placement.
+            </p>
+          </div>
+          <Link
+            href="/workflow"
+            className="relative z-10 px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm transition-all shadow-md shrink-0 flex items-center gap-2"
+          >
+            <Network className="w-4 h-4" />
+            <span>View Live Architecture Map</span>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
