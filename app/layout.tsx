@@ -5,7 +5,7 @@ import RoleSwitcher from '@/components/RoleSwitcher';
 import Navbar from '@/components/Navbar';
 import LiveWallpaper from '@/components/LiveWallpaper';
 import MobileBottomNav from '@/components/MobileBottomNav';
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from '@vercel/analytics/next';
 
 export const viewport: Viewport = {
   width: 'device-width',
