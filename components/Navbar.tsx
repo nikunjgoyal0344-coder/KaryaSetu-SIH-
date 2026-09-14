@@ -124,10 +124,14 @@ export default function Navbar() {
               })}
             </nav>
           ) : (
-            <div className="hidden sm:flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400 font-medium">
-              <span>National Ayush Skilling Framework</span>
-              <span>•</span>
-              <span>Healthcare Sector Skill Council Aligned</span>
+            <div className="hidden sm:flex items-center gap-2.5 text-xs font-medium">
+              <span className="text-slate-100 font-semibold tracking-wide">
+                National Ayush Skilling Framework
+              </span>
+              <span className="text-amber-400 font-bold">•</span>
+              <span className="text-slate-200">
+                Healthcare Sector Skill Council Aligned
+              </span>
             </div>
           )}
 
