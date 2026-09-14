@@ -15,19 +15,19 @@ export default function GovTopBanner() {
   };
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
+    <div className="w-full bg-white dark:bg-slate-900 border-b border-slate-200/90 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300">
       {/* Indian National Tricolor Hairline Stripe */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808]" />
+      <div className="h-[3.5px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808]" />
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between gap-2 overflow-hidden">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between gap-2 overflow-hidden">
         {/* Left: Ministry Identifier */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-          <span className="font-bold text-slate-900 dark:text-blue-300 flex items-center gap-1.5 shrink-0 text-[11px] sm:text-xs">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 shrink-0" />
+          <span className="font-bold text-navy-900 dark:text-blue-300 flex items-center gap-1.5 shrink-0 text-[11px] sm:text-xs">
+            <span className="inline-block w-2 h-2 rounded-full bg-saffron shrink-0" />
             {t('govOfIndia', language)}
           </span>
           <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">|</span>
-          <span className="truncate text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 hidden sm:inline">
+          <span className="truncate text-[10px] sm:text-xs text-slate-700 dark:text-slate-300 font-medium hidden sm:inline">
             {t('ministryHeader', language)}
           </span>
         </div>

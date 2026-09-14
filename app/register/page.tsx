@@ -19,6 +19,7 @@ import {
   AlertCircle,
   CheckCircle2,
   BadgeCheck,
+  CreditCard,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -36,6 +37,7 @@ function RegisterForm() {
   const [roleType, setRoleType] = useState<UserRole>(initialRole);
   const [fullName, setFullName] = useState('');
   const [enrollmentId, setEnrollmentId] = useState('');
+  const [abcId, setAbcId] = useState('8472-1920-3841');
   const [email, setEmail] = useState('');
   const [organization, setOrganization] = useState('');
   const [password, setPassword] = useState('');
@@ -144,9 +146,11 @@ function RegisterForm() {
         ...prev,
         name: fullName.trim(),
         email: email.trim(),
-        rollNo: enrollmentId.trim(),
-        institution: organization.trim(),
-        verified: true,
+        college: organization.trim(),
+        abcId: abcId.trim() || prev.abcId || '8472-1920-3841',
+        isAbcLinked: true,
+        abcCredits: prev.abcCredits || 148,
+        isInstitutionVerified: true,
       }));
     }
 
@@ -165,11 +169,11 @@ function RegisterForm() {
     <div className="max-w-lg mx-auto my-6 p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_8px_24px_rgba(0,0,0,0.03)] transition-colors">
       {/* Emblem Header */}
       <div className="text-center mb-6">
-        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-500/50 mx-auto mb-3 shadow-sm bg-slate-900/10 dark:bg-white/10 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-400/60 mx-auto mb-3 shadow-sm bg-navy-900 flex items-center justify-center">
           <img src="/logo.png" alt="KaryaSetu Logo" className="w-full h-full object-cover scale-110" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Sign In &amp; Register</h2>
-        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+        <h2 className="text-2xl font-extrabold text-navy-900 dark:text-white">Sign In &amp; Register</h2>
+        <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 font-medium">
           Provide your official details to establish your authenticated portal profile
         </p>
       </div>
@@ -178,11 +182,11 @@ function RegisterForm() {
       <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-5 font-semibold text-xs text-center">
         <Link
           href={`/login?role=${roleType}`}
-          className="py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:text-navy-900 dark:hover:text-white font-semibold transition-colors"
         >
           Log In (ID &amp; Password)
         </Link>
-        <div className="py-2 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs">
+        <div className="py-2 rounded-xl bg-saffron text-white shadow-xs font-bold">
           Sign In (Provide Details)
         </div>
       </div>
@@ -190,7 +194,7 @@ function RegisterForm() {
       {/* Role Selection Tabs */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
             Select Your Role:
           </label>
           <button
@@ -217,11 +221,11 @@ function RegisterForm() {
                 }}
                 className={`p-2.5 rounded-xl border font-medium transition-all text-left flex items-center gap-2 ${
                   isSelected
-                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-emerald-700 dark:border-emerald-600 shadow-xs'
-                    : 'bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? 'bg-navy-900 text-white border-navy-900 shadow-xs'
+                    : 'bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-amber-400' : 'text-navy-700 dark:text-slate-400'}`} />
                 <span className="text-[11px] font-semibold truncate">{meta.name}</span>
               </button>
             );
@@ -280,6 +284,33 @@ function RegisterForm() {
             />
           </div>
         </div>
+
+        {/* Academic Bank of Credits (ABC ID / APAAR) for Students */}
+        {roleType === 'student' && (
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold">
+                Academic Bank of Credits (ABC ID / APAAR)
+              </label>
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
+                NEP 2020 Aligned
+              </span>
+            </div>
+            <div className="relative">
+              <CreditCard className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <input
+                type="text"
+                value={abcId}
+                onChange={(e) => setAbcId(e.target.value)}
+                placeholder="e.g. 8472-1920-3841"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 dark:focus:ring-emerald-500 text-xs font-mono"
+              />
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+              Connects your DigiLocker credits to Ayush clinical internships and university records.
+            </p>
+          </div>
+        )}
 
         {/* Email */}
         <div>
@@ -390,7 +421,7 @@ function RegisterForm() {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full py-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 mt-3"
+          className="w-full py-3 rounded-xl bg-saffron hover:bg-saffron-hover text-white font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 mt-3"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>Complete Sign In &amp; Enter {currentMeta.name}</span>

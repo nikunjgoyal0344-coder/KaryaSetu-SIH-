@@ -51,6 +51,11 @@ interface AppContextType {
   unverifiedStudents: UnverifiedStudent[];
   verifyStudent: (studentId: string) => void;
   flagStudent: (studentId: string) => void;
+  // Academic Bank of Credits (ABC ID / APAAR)
+  linkAbcId: (abcId: string) => void;
+  syncAbcCredits: () => void;
+  // Demo Data Reset
+  resetDemoData: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -67,16 +72,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [unverifiedStudents, setUnverifiedStudents] = useState<UnverifiedStudent[]>(INITIAL_UNVERIFIED_STUDENTS);
   const [language, setLanguageState] = useState<Language>('en');
 
-  // Sync theme, wallpaper and language with document and localStorage
+  // Sync theme, wallpaper, language and dynamic entity state with document and localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('karyasetu-theme') as ThemeMode;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+    const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const effectiveTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    setTheme(effectiveTheme);
+    if (effectiveTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
     }
 
     const savedWallpaper = localStorage.getItem('karyasetu-wallpaper') as WallpaperMode;
@@ -97,7 +104,73 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (e) {}
       }
     }
+
+    // Hydrate dynamic entity state for true multi-page persistence
+    try {
+      const savedStudent = localStorage.getItem('karyasetu-student');
+      if (savedStudent) setStudent(JSON.parse(savedStudent));
+
+      const savedOpps = localStorage.getItem('karyasetu-opportunities');
+      if (savedOpps) setOpportunities(JSON.parse(savedOpps));
+
+      const savedApps = localStorage.getItem('karyasetu-applications');
+      if (savedApps) setApplications(JSON.parse(savedApps));
+
+      const savedNotifs = localStorage.getItem('karyasetu-notifications');
+      if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
+
+      const savedUnv = localStorage.getItem('karyasetu-unverified');
+      if (savedUnv) setUnverifiedStudents(JSON.parse(savedUnv));
+
+      const savedRole = localStorage.getItem('karyasetu-role') as UserRole;
+      if (savedRole && ['student', 'industry', 'faculty', 'institution'].includes(savedRole)) {
+        setRole(savedRole);
+      }
+
+      const savedAuth = localStorage.getItem('karyasetu-auth');
+      if (savedAuth !== null) setIsLoggedIn(savedAuth === 'true');
+    } catch (e) {
+      console.warn('Could not restore state from localStorage:', e);
+    }
   }, []);
+
+  // Sync state changes to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('karyasetu-student', JSON.stringify(student));
+    } catch (e) {}
+  }, [student]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('karyasetu-opportunities', JSON.stringify(opportunities));
+    } catch (e) {}
+  }, [opportunities]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('karyasetu-applications', JSON.stringify(applications));
+    } catch (e) {}
+  }, [applications]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('karyasetu-notifications', JSON.stringify(notifications));
+    } catch (e) {}
+  }, [notifications]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('karyasetu-unverified', JSON.stringify(unverifiedStudents));
+    } catch (e) {}
+  }, [unverifiedStudents]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('karyasetu-role', role);
+      localStorage.setItem('karyasetu-auth', String(isLoggedIn));
+    } catch (e) {}
+  }, [role, isLoggedIn]);
 
   const setLanguage = (newLang: Language) => {
     setLanguageState(newLang);
@@ -135,8 +208,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('karyasetu-theme', next);
       if (next === 'dark') {
         document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
       } else {
         document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
       }
       return next;
     });
@@ -323,6 +398,66 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  // Academic Bank of Credits (ABC ID / APAAR) Integration
+  const linkAbcId = (newAbcId: string) => {
+    const formatted = newAbcId.trim();
+    const timestamp = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' IST';
+    setStudent((prev) => ({
+      ...prev,
+      abcId: formatted,
+      isAbcLinked: true,
+      abcLastSynced: timestamp,
+    }));
+
+    addNotification({
+      title: 'Academic Bank of Credits (ABC) Linked',
+      message: `ABC ID ${formatted} successfully mapped to DigiLocker and AIIA academic records.`,
+      type: 'verification',
+      link: '/student/portfolio',
+    });
+  };
+
+  const syncAbcCredits = () => {
+    const timestamp = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' IST';
+    setStudent((prev) => ({
+      ...prev,
+      isAbcLinked: true,
+      abcLastSynced: timestamp,
+    }));
+
+    addNotification({
+      title: 'ABC Credits Synchronized',
+      message: `Academic Bank of Credits synchronized with DigiLocker. ${student.abcCredits || 148} Credits authenticated.`,
+      type: 'verification',
+      link: '/student/dashboard',
+    });
+  };
+
+  // Reset Demo Data
+  const resetDemoData = () => {
+    try {
+      localStorage.removeItem('karyasetu-student');
+      localStorage.removeItem('karyasetu-opportunities');
+      localStorage.removeItem('karyasetu-applications');
+      localStorage.removeItem('karyasetu-notifications');
+      localStorage.removeItem('karyasetu-unverified');
+      localStorage.removeItem('karyasetu-role');
+      localStorage.removeItem('karyasetu-auth');
+      setStudent(INITIAL_STUDENT);
+      setOpportunities(INITIAL_OPPORTUNITIES);
+      setApplications(INITIAL_APPLICATIONS);
+      setNotifications(INITIAL_NOTIFICATIONS);
+      setUnverifiedStudents(INITIAL_UNVERIFIED_STUDENTS);
+      setRole('student');
+      setIsLoggedIn(false);
+      addNotification({
+        title: 'Demo Data Reset',
+        message: 'System data re-synchronized to pristine national cohort benchmark.',
+        type: 'verification',
+      });
+    } catch (e) {}
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -355,6 +490,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         unverifiedStudents,
         verifyStudent,
         flagStudent,
+        linkAbcId,
+        syncAbcCredits,
+        resetDemoData,
       }}
     >
       {children}

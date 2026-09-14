@@ -18,10 +18,14 @@ import {
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const { role, isLoggedIn, language } = useApp();
-
-  if (!isLoggedIn) return null;
-
   const isHi = language === 'hi';
+
+  const guestLinks = [
+    { href: '/', label: isHi ? 'होम' : 'Home', icon: LayoutDashboard },
+    { href: '/student/internships', label: isHi ? 'अवसर' : 'Opportunities', icon: Briefcase },
+    { href: '/workflow', label: isHi ? 'वर्कफ़्लो' : 'Workflow', icon: BookOpen },
+    { href: '/login', label: isHi ? 'पोर्टल' : 'Portals', icon: GraduationCap },
+  ];
 
   const studentLinks = [
     { href: '/student/dashboard', label: isHi ? 'डैशबोर्ड' : 'Dashboard', icon: LayoutDashboard },
@@ -47,14 +51,15 @@ export default function MobileBottomNav() {
     { href: '/institution/analytics', label: isHi ? 'एनालिटिक्स' : 'Analytics', icon: Briefcase },
   ];
 
-  const links =
-    role === 'student'
-      ? studentLinks
-      : role === 'industry'
-      ? industryLinks
-      : role === 'faculty'
-      ? facultyLinks
-      : institutionLinks;
+  const links = !isLoggedIn
+    ? guestLinks
+    : role === 'student'
+    ? studentLinks
+    : role === 'industry'
+    ? industryLinks
+    : role === 'faculty'
+    ? facultyLinks
+    : institutionLinks;
 
   return (
     <nav aria-label="Mobile Navigation Bar" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-emerald-900/10 dark:border-slate-800 shadow-2xl px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors">
@@ -69,17 +74,17 @@ export default function MobileBottomNav() {
               href={link.href}
               className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl min-h-[50px] transition-all relative ${
                 isActive
-                  ? 'text-emerald-700 dark:text-emerald-400 font-bold'
+                  ? 'text-saffron-dark dark:text-saffron font-bold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               {isActive && (
-                <span className="absolute -top-1 w-6 h-1 bg-emerald-600 dark:bg-emerald-400 rounded-full animate-in fade-in zoom-in duration-200" />
+                <span className="absolute -top-1 w-6 h-1 bg-saffron rounded-full animate-in fade-in zoom-in duration-200" />
               )}
               <div
                 className={`p-1 rounded-xl transition-all ${
                   isActive
-                    ? 'bg-emerald-100/70 dark:bg-emerald-950/60 shadow-xs scale-105'
+                    ? 'bg-orange-100/80 dark:bg-saffron/20 shadow-xs scale-105 text-saffron-dark dark:text-saffron'
                     : ''
                 }`}
               >

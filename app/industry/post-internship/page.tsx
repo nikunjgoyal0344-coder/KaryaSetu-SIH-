@@ -87,43 +87,43 @@ export default function PostInternshipPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8 py-4 text-xs">
       {/* Header */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold mb-2">
-          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+      <div className="bg-white dark:bg-slate-900/90 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 text-saffron-dark dark:text-orange-300 font-semibold mb-2">
+          <Sparkles className="w-3.5 h-3.5 text-saffron" />
           Industry Talent Acquisition Gateway
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">Post Opportunity with Required Skills</h1>
-        <p className="text-slate-500 mt-1">
+        <h1 className="text-2xl font-bold text-navy-900 dark:text-white">Post Opportunity with Required Skills</h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-1">
           Our algorithm will immediately match your weighted requirements against pre-assessed AYUSH graduates
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900/90 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
         <div className="space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 border-b border-slate-100 pb-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-navy-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">
             1. Role Overview
           </h2>
 
           <div>
-            <label className="block text-slate-700 font-semibold mb-1">Opportunity Title</label>
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Opportunity Title</label>
             <input
               type="text"
               placeholder="e.g. Clinical Panchakarma Resident Intern / Quality Analyst"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 font-medium"
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-saffron text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 font-medium"
               required
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">Opportunity Category</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Opportunity Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as any)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-saffron bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               >
                 <option value="Internship">Internship</option>
                 <option value="Entry-Level Job">Entry-Level Job</option>
@@ -133,11 +133,11 @@ export default function PostInternshipPage() {
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">Work Mode</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Work Mode</label>
               <select
                 value={mode}
                 onChange={(e) => setMode(e.target.value as any)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-900"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-saffron bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               >
                 <option value="On-site">On-site</option>
                 <option value="Hybrid">Hybrid</option>
@@ -148,70 +148,70 @@ export default function PostInternshipPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">Location</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Location</label>
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-saffron text-slate-900 dark:text-white"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">Duration</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Duration</label>
               <input
                 type="text"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-saffron text-slate-900 dark:text-white"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">Stipend / CTC</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Stipend / CTC</label>
               <input
                 type="text"
                 value={stipend}
                 onChange={(e) => setStipend(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-saffron text-slate-900 dark:text-white"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-slate-700 font-semibold mb-1">Job Description & Responsibilities</label>
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Job Description & Responsibilities</label>
             <textarea
               rows={3}
               placeholder="Describe the clinical or industrial tasks, learning outcomes, and mentorship..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-saffron text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
             />
           </div>
         </div>
 
         {/* Required Skills Configuration */}
-        <div className="space-y-4 pt-4 border-t border-slate-100">
+        <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-navy-900 dark:text-white">
                 2. Required Skills & Importance Weighting
               </h2>
-              <p className="text-slate-400 text-[11px]">
+              <p className="text-slate-500 dark:text-slate-400 text-[11px]">
                 Importance weight (1 to 5) directly drives the gap score formula: Gap = Imp × (Req - Curr)
               </p>
             </div>
           </div>
 
           {/* Add skill row */}
-          <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700">
             <select
               value={newSkillId}
               onChange={(e) => setNewSkillId(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 text-xs"
+              className="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs focus:ring-2 focus:ring-saffron focus:outline-none"
             >
               {AYUSH_SKILLS_TAXONOMY.map((tax) => (
                 <option key={tax.id} value={tax.id}>
@@ -222,7 +222,7 @@ export default function PostInternshipPage() {
             <button
               type="button"
               onClick={handleAddSkill}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2.5 bg-navy-900 hover:bg-navy-800 dark:bg-saffron dark:hover:bg-saffron-hover text-white font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs shrink-0"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Add Skill</span>
@@ -234,16 +234,16 @@ export default function PostInternshipPage() {
             {selectedSkills.map((s, idx) => (
               <div
                 key={s.skillId}
-                className="p-3.5 rounded-2xl border border-slate-200 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs"
               >
                 <div className="space-y-0.5">
-                  <span className="font-bold text-slate-900 block">{s.skillName}</span>
-                  <span className="text-[10px] text-slate-400">ID: {s.skillId}</span>
+                  <span className="font-bold text-navy-900 dark:text-white block">{s.skillName}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">ID: {s.skillId}</span>
                 </div>
 
                 <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-500 text-[11px]">Target Lvl:</span>
+                    <span className="text-slate-600 dark:text-slate-400 text-[11px]">Target Lvl:</span>
                     <select
                       value={s.requiredLevel}
                       onChange={(e) => {
@@ -252,7 +252,7 @@ export default function PostInternshipPage() {
                           prev.map((item, i) => (i === idx ? { ...item, requiredLevel: val } : item))
                         );
                       }}
-                      className="px-2 py-1 rounded-lg border border-slate-200 bg-white font-bold text-blue-700"
+                      className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-navy-900 dark:text-white focus:ring-2 focus:ring-saffron"
                     >
                       {[1, 2, 3, 4, 5].map((lvl) => (
                         <option key={lvl} value={lvl}>
@@ -263,7 +263,7 @@ export default function PostInternshipPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-500 text-[11px]">Weight:</span>
+                    <span className="text-slate-600 dark:text-slate-400 text-[11px]">Weight:</span>
                     <select
                       value={s.importanceWeight}
                       onChange={(e) => {
@@ -272,7 +272,7 @@ export default function PostInternshipPage() {
                           prev.map((item, i) => (i === idx ? { ...item, importanceWeight: val } : item))
                         );
                       }}
-                      className="px-2 py-1 rounded-lg border border-slate-200 bg-white font-bold text-amber-600"
+                      className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-saffron-dark dark:text-saffron focus:ring-2 focus:ring-saffron"
                     >
                       {[1, 2, 3, 4, 5].map((w) => (
                         <option key={w} value={w}>
@@ -285,7 +285,7 @@ export default function PostInternshipPage() {
                   <button
                     type="button"
                     onClick={() => handleRemoveSkill(s.skillId)}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -299,7 +299,7 @@ export default function PostInternshipPage() {
         <div className="pt-4 flex justify-end">
           <button
             type="submit"
-            className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 flex items-center gap-2 transition-all"
+            className="px-6 py-3 rounded-2xl bg-saffron hover:bg-saffron-hover text-white font-bold text-sm shadow-md shadow-saffron/25 flex items-center gap-2 transition-all"
           >
             <span>Publish Opportunity to Marketplace</span>
             <ArrowRight className="w-4 h-4" />

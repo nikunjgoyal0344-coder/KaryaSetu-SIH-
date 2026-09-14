@@ -20,6 +20,13 @@ export interface StudentProfile {
   institutionVerificationDate?: string;
   completedCertificates: { title: string; issuer: string; date: string; verified: boolean }[];
   projects: { title: string; description: string; tag: string }[];
+  // Academic Bank of Credits (ABC ID / APAAR)
+  abcId?: string;
+  isAbcLinked?: boolean;
+  abcCredits?: number;
+  abcLastSynced?: string;
+  abcInstitution?: string;
+  abcCreditBreakdown?: { category: string; credits: number; level: string; verifiedBy: string }[];
 }
 
 export interface ApplicationItem {
@@ -53,6 +60,8 @@ export interface UnverifiedStudent {
   year: string;
   cgpa: number;
   digiLockerId: string;
+  abcId?: string;
+  abcCredits?: number;
   status: 'Pending' | 'Verified' | 'Flagged';
   submittedDate: string;
 }
@@ -101,7 +110,18 @@ export const INITIAL_STUDENT: StudentProfile = {
   projects: [
     { title: 'Standardized Virechana Protocol for Psoriasis', description: 'Clinical case documentation of 25 patients under supervised OPD setup with standardized herbal formulation tracking.', tag: 'Clinical Study' },
     { title: 'Ahara Dietetics App for Metabolic Syndromes', description: 'Prototype algorithm correlating Prakriti with glycemic index of indigenous Indian grains.', tag: 'Digital Health' }
-  ]
+  ],
+  abcId: '8472-1920-3841',
+  isAbcLinked: true,
+  abcCredits: 148,
+  abcLastSynced: '12 Sep 2026, 11:20 IST',
+  abcInstitution: 'All India Institute of Ayurveda (AIIA), New Delhi',
+  abcCreditBreakdown: [
+    { category: 'Core Ayush Clinical Practicum', credits: 84, level: 'NSQF Level 7', verifiedBy: 'AIIA Academic Council' },
+    { category: 'Pharmacognosy & Phytochemistry Lab', credits: 32, level: 'NSQF Level 7', verifiedBy: 'PCIM&H / Ministry of Ayush' },
+    { category: 'Hospital IPD/OPD Clinical Residency', credits: 20, level: 'NSQF Level 7', verifiedBy: 'AIIA Hospital Wing' },
+    { category: 'Integrative Health & Digital Health Records', credits: 12, level: 'NSQF Level 6', verifiedBy: 'AyushGrid National Portal' },
+  ],
 };
 
 export const INITIAL_OPPORTUNITIES: Opportunity[] = [
@@ -348,6 +368,8 @@ export const INITIAL_UNVERIFIED_STUDENTS: UnverifiedStudent[] = [
     year: 'Final Year',
     cgpa: 8.8,
     digiLockerId: 'DL-AYUSH-9921-X',
+    abcId: '8472-1920-3841',
+    abcCredits: 148,
     status: 'Verified',
     submittedDate: '12 Sep 2026',
   },
@@ -360,6 +382,8 @@ export const INITIAL_UNVERIFIED_STUDENTS: UnverifiedStudent[] = [
     year: 'Final Year',
     cgpa: 8.3,
     digiLockerId: 'DL-AYUSH-8834-Y',
+    abcId: '7729-3810-4491',
+    abcCredits: 132,
     status: 'Pending',
     submittedDate: '11 Sep 2026',
   },
@@ -372,6 +396,8 @@ export const INITIAL_UNVERIFIED_STUDENTS: UnverifiedStudent[] = [
     year: '2nd Year',
     cgpa: 9.1,
     digiLockerId: 'DL-AYUSH-7711-K',
+    abcId: '6619-4820-1934',
+    abcCredits: 164,
     status: 'Pending',
     submittedDate: '10 Sep 2026',
   },
@@ -384,6 +410,8 @@ export const INITIAL_UNVERIFIED_STUDENTS: UnverifiedStudent[] = [
     year: '3rd Year',
     cgpa: 7.9,
     digiLockerId: 'DL-AYUSH-6643-M',
+    abcId: '5501-9231-8842',
+    abcCredits: 96,
     status: 'Pending',
     submittedDate: '09 Sep 2026',
   },

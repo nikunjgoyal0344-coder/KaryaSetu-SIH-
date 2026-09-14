@@ -117,30 +117,30 @@ export default function WorkflowPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Top Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-linear-to-r from-slate-900 via-emerald-950 to-slate-900 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-navy-950 via-navy-900 to-navy-800 text-white shadow-xl relative overflow-hidden border border-navy-700">
+        <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-96 h-96 bg-navy-700/20 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy-800 border border-navy-700 text-amber-400 text-xs font-semibold uppercase tracking-wider">
               <BrainCircuit className="w-3.5 h-3.5" />
-              Architecture & Data Flow Map
+              Architecture &amp; Data Flow Map
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               KaryaSetu - System WorkFlow
             </h1>
-            <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-sm text-slate-200 max-w-2xl leading-relaxed">
               Interactive structural map illustrating the multi-stakeholder feedback loops between Student Journeys, Core Processing, Opportunity Flows, Industry Actions, Faculty Actions, and Institution Actions.
             </p>
           </div>
 
           {/* Tab Switcher */}
-          <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-navy-950/60 backdrop-blur-md border border-navy-700/80 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setActiveTab('visual')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center ${
                 activeTab === 'visual'
-                  ? 'bg-emerald-600 text-white shadow-md'
+                  ? 'bg-saffron text-white shadow-md'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
@@ -151,7 +151,7 @@ export default function WorkflowPage() {
               onClick={() => setActiveTab('specification')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center ${
                 activeTab === 'specification'
-                  ? 'bg-emerald-600 text-white shadow-md'
+                  ? 'bg-saffron text-white shadow-md'
                   : 'text-slate-300 hover:text-white'
               }`}
             >

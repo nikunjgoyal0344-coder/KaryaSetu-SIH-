@@ -43,16 +43,16 @@ export default function LiveWallpaper() {
 
     const colors = isDark
       ? [
-          'rgba(16, 185, 129, ', // emerald
-          'rgba(20, 184, 166, ', // teal
-          'rgba(245, 158, 11, ', // saffron
+          'rgba(0, 174, 173, ',  // niti teal
           'rgba(56, 189, 248, ', // cyan
+          'rgba(242, 110, 36, ', // saffron
+          'rgba(32, 120, 116, ', // niti green
         ]
       : [
-          'rgba(58, 92, 75, ',  // muted deep forest sage
-          'rgba(71, 85, 105, ', // soft mineral slate
-          'rgba(120, 98, 76, ', // muted warm sandalwood
-          'rgba(67, 90, 112, ', // calm slate blue
+          'rgba(0, 174, 173, ',  // niti signature teal #00AEAD
+          'rgba(24, 55, 102, ',  // niti deep institutional blue #183766
+          'rgba(242, 110, 36, ', // niti warm saffron #F26E24
+          'rgba(32, 120, 116, ', // niti green #207874
         ];
 
     for (let i = 0; i < particleCount; i++) {
