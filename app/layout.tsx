@@ -8,6 +8,7 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 import GovTopBanner from '@/components/GovTopBanner';
 import GovFooter from '@/components/GovFooter';
 import GoogleTranslate from '@/components/GoogleTranslate';
+import AiChatbot from '@/components/AiChatbot';
 import { Analytics } from '@vercel/analytics/next';
 
 export const viewport: Viewport = {
@@ -69,6 +70,7 @@ export default function RootLayout({
             {children}
           </main>
           <MobileBottomNav />
+          <AiChatbot />
           <GovFooter />
           <Analytics />
         </AppProvider>

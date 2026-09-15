@@ -31,6 +31,7 @@ export default function MobileBottomNav() {
     { href: '/student/dashboard', label: isHi ? 'डैशबोर्ड' : 'Dashboard', icon: LayoutDashboard },
     { href: '/student/assessment', label: isHi ? 'मूल्यांकन' : 'Assessment', icon: Award },
     { href: '/student/internships', label: isHi ? 'अवसर' : 'Matches', icon: Briefcase },
+    { href: '/student/learning-path', label: isHi ? 'सीखें' : 'Learn', icon: BookOpen },
     { href: '/student/portfolio', label: isHi ? 'पोर्टफोलियो' : 'Portfolio', icon: FileCheck2 },
   ];
 

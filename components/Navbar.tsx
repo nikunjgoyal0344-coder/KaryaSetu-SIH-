@@ -42,6 +42,7 @@ export default function Navbar() {
     { href: '/student/assessment', label: t('skillAssessment', language), icon: Award },
     { href: '/student/internships', label: t('opportunities', language), icon: Briefcase },
     { href: '/student/portfolio', label: t('portfolio', language), icon: FileCheck2 },
+    { href: '/student/learning-path', label: t('learningPath', language), icon: BookOpen },
   ];
 
   const industryLinks = [
