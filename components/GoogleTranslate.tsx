@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
 import { useApp } from '@/lib/store';
-import { usePathname } from 'next/navigation';
 
 declare global {
   interface Window {
@@ -12,10 +11,15 @@ declare global {
   }
 }
 
+/**
+ * GoogleTranslate Component
+ * Note: Auto-translation is disabled.
+ * The site only translates when the user explicitly clicks the Language button in the Navbar or Top Banner.
+ */
 export default function GoogleTranslate() {
   const { language } = useApp();
-  const pathname = usePathname();
   const initializedRef = useRef(false);
+  const firstRenderRef = useRef(true);
 
   useEffect(() => {
     window.googleTranslateElementInit = () => {
@@ -25,6 +29,7 @@ export default function GoogleTranslate() {
             pageLanguage: 'en',
             includedLanguages: 'en,hi',
             autoDisplay: false,
+            layout: window.google.translate.TranslateElement.InlineLayout?.SIMPLE,
           },
           'google_translate_element'
         );
@@ -32,14 +37,26 @@ export default function GoogleTranslate() {
       }
     };
 
-    // If script was already loaded in prior navigation, re-init if needed
     if (window.google?.translate?.TranslateElement && !initializedRef.current) {
       window.googleTranslateElementInit();
     }
   }, []);
 
-  // Synchronize Google Translate dropdown with store language
+  // Synchronize Google Translate only when language changes via button click
   useEffect(() => {
+    // Skip auto-translating on first render if default language is English
+    if (firstRenderRef.current) {
+      firstRenderRef.current = false;
+      if (language === 'en') {
+        // Clear any Google Translate cookies on first load so page is never auto-translated
+        if (typeof document !== 'undefined') {
+          document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          document.cookie = 'googtrans=/en/en; path=/;';
+        }
+        return;
+      }
+    }
+
     const applyTranslation = () => {
       const select = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
       if (select) {
@@ -50,16 +67,21 @@ export default function GoogleTranslate() {
       }
     };
 
-    const t1 = setTimeout(applyTranslation, 300);
-    const t2 = setTimeout(applyTranslation, 800);
-    const t3 = setTimeout(applyTranslation, 1600);
+    // When switching to English, also clean up the cookie
+    if (language === 'en') {
+      if (typeof document !== 'undefined') {
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'googtrans=/en/en; path=/;';
+        if (typeof window !== 'undefined' && window.location.hostname) {
+          document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+          document.cookie = `googtrans=/en/en; path=/; domain=${window.location.hostname};`;
+        }
+      }
+    }
 
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [language, pathname]);
+    const t = setTimeout(applyTranslation, 300);
+    return () => clearTimeout(t);
+  }, [language]);
 
   return (
     <>

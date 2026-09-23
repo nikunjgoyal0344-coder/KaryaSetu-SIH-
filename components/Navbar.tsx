@@ -34,7 +34,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { role, isLoggedIn, logout, student, language } = useApp();
+  const { role, isLoggedIn, logout, student, language, setLanguage } = useApp();
   const currentUser = getCurrentUser(role);
 
   const studentLinks = [
@@ -155,6 +155,18 @@ export default function Navbar() {
 
             {/* Theme Toggle Button */}
             <ThemeToggle />
+
+            {/* Explicit Language Switcher Button (Changes language ONLY on user click) */}
+            <button
+              type="button"
+              onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-200 hover:text-white font-bold text-xs border border-navy-700 hover:border-saffron/60 transition-all shadow-2xs cursor-pointer"
+              title={language === 'en' ? 'Click to change site language to Hindi (हिन्दी)' : 'Click to change site language to English'}
+              aria-label="Toggle language"
+            >
+              <span className="text-xs">🌐</span>
+              <span className="font-bold">{language === 'en' ? 'हिन्दी' : 'English'}</span>
+            </button>
 
             {isLoggedIn ? (
               /* User Profile & Sign Out Controls */
@@ -353,6 +365,15 @@ export default function Navbar() {
               <span>Interactive Workflow Map</span>
             </Link>
             <div className="flex items-center gap-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+                className="h-8 px-2 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-200 font-bold text-[11px] border border-navy-700 flex items-center gap-1"
+                title={language === 'en' ? 'Switch to Hindi' : 'Switch to English'}
+              >
+                <span>🌐</span>
+                <span>{language === 'en' ? 'हिन्दी' : 'EN'}</span>
+              </button>
               <ThemeToggle showLabel={false} />
               <WallpaperToggle showLabels={false} />
             </div>

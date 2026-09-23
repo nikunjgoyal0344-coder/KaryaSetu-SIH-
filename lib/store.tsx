@@ -92,16 +92,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     const savedLang = localStorage.getItem('karyasetu-lang') as Language;
-    if (savedLang === 'hi' || savedLang === 'en') {
-      setLanguageState(savedLang);
-      document.documentElement.lang = savedLang;
-      if (savedLang === 'hi') {
-        document.cookie = 'googtrans=/en/hi; path=/';
-        try {
-          if (window.location.hostname) {
-            document.cookie = `googtrans=/en/hi; path=/; domain=${window.location.hostname}`;
-          }
-        } catch (e) {}
+    if (savedLang === 'hi') {
+      setLanguageState('hi');
+      document.documentElement.lang = 'hi';
+    } else {
+      setLanguageState('en');
+      document.documentElement.lang = 'en';
+      // Clear any auto-translate cookies so browser does not translate on load
+      if (typeof document !== 'undefined') {
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'googtrans=/en/en; path=/;';
+        if (typeof window !== 'undefined' && window.location.hostname) {
+          document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+          document.cookie = `googtrans=/en/en; path=/; domain=${window.location.hostname};`;
+        }
       }
     }
 

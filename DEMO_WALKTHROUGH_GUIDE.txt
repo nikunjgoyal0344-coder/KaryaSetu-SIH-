@@ -1,0 +1,242 @@
+================================================================================
+          KARYASETU — COMPLETE STEP-BY-STEP LIVE DEMO GUIDE
+          "Where to Click, Which Page to Show, and What to Say"
+================================================================================
+
+Server Address: http://localhost:3000
+Recommended Browser: Google Chrome / Edge
+Total Demo Time: 5 to 7 Minutes
+
+--------------------------------------------------------------------------------
+STEP 1: THE PUBLIC LANDING PAGE (Sovereign Design & Accessibility)
+--------------------------------------------------------------------------------
+📍 PAGE URL:
+   http://localhost:3000/
+
+🎯 WHAT BUTTONS / OPTIONS TO CLICK:
+   1. Look at the top-right header and click the "हिंदी" button:
+      -> Watch the entire site's navigation and badges instantly switch to Hindi.
+      -> Click "English" to switch back.
+   2. Click the Wallpaper Toggle Icon (next to the theme toggle):
+      -> Toggles the ambient particle network on and off.
+   3. Click the Font Size buttons on the top tricolor banner:
+      -> Click "A+" -> Text scales larger for clinical accessibility.
+      -> Click "A" -> Resets to standard scale.
+   4. Click the Theme Toggle Icon (Sun / Moon):
+      -> Shows seamless WCAG 2.1 AAA dark mode and light mode with zero contrast bugs.
+
+💬 WHAT TO SAY:
+   "We start on the sovereign portal, designed with Ministry of Ayush tricolor 
+   standards. Notice the instant English/Hindi bilingual engine, accessibility 
+   font scaling, and high-contrast dark/light mode."
+
+
+--------------------------------------------------------------------------------
+STEP 2: STUDENT SCHOLAR DASHBOARD (Competency Radar & APAAR Credits)
+--------------------------------------------------------------------------------
+📍 PAGE URL:
+   http://localhost:3000/student/dashboard
+
+🎯 WHAT BUTTONS / OPTIONS TO CLICK:
+   1. Point to the "8-Axis Octagonal Competency Radar":
+      -> Hover over the 8 vertices (Panchakarma, Nadi Pariksha, etc.).
+   2. Point to the animated circular "Readiness Score" (84%).
+   3. Scroll to the "Bridge +1 Quick Competency Booster" cards:
+      -> Click the "+1 Level" button on "Rasashastra & Formulation QA":
+      -> Notice the level jumps and the readiness score animates upward live!
+   4. Look at the "Academic Bank of Credits (ABC / APAAR)" card on the right:
+      -> Shows 12-digit APAAR ID (8472-1920-3841) and 148 verified credits.
+      -> Click the "Sync ABC Credits" button:
+      -> A modal pops up showing real-time DigiLocker & National Academic 
+         Depository (NAD) attestation.
+
+💬 WHAT TO SAY:
+   "Here is scholar Ananya Sharma's dashboard. Instead of flat text resumes, her 
+   abilities are plotted on an 8-axis geometric radar. Notice the Academic Bank 
+   of Credits integration: under NEP 2020, her hospital internship hours directly 
+   sync to her APAAR university credit ledger via DigiLocker."
+
+
+--------------------------------------------------------------------------------
+STEP 3: AI-MATCHED INTERNSHIPS (Explainable AI Vector Engine)
+--------------------------------------------------------------------------------
+📍 PAGE URL:
+   http://localhost:3000/student/internships
+
+🎯 WHAT BUTTONS / OPTIONS TO CLICK:
+   1. Point to the job cards:
+      -> See live postings like 'Panchakarma Clinical Resident at AIIA' (92% Match), 
+         'Ayurvedic R&D Fellow at Dabur' (88% Match).
+   2. Click the filter pills: "All Modes", "On-site", "Hybrid", "Remote".
+   3. CLICK THIS KEY BUTTON: "Why this matches?" on the first job card:
+      -> A large Explainable AI (XAI) modal appears on your screen!
+      -> Point out:
+         - Pure Vector Cosine Similarity (0.8273)
+         - Multi-factor breakdown: 55% Cosine + 25% Keyword + 20% Domain
+         - Skill alignment: Superior, Optimal, Developing, Deficit
+         - Recommended NSQF remedial action roadmap
+   4. Click the orange "Apply Now" button on any opportunity card:
+      -> Instantly submits the application with verified credential tags.
+
+💬 WHAT TO SAY:
+   "When Ananya views internships, they aren't sorted by basic tags. We use a 
+   15-dimensional Vector Cosine Similarity engine combined with TF-IDF keyword 
+   filtering. When we click 'Why this matches?', the AI explains its exact 
+   reasoning, showing strengths, deficits, and remedial steps."
+
+
+--------------------------------------------------------------------------------
+STEP 4: CLOSED-LOOP AI SKILL ASSESSMENT (Live MCQ Diagnostic Testing)
+--------------------------------------------------------------------------------
+📍 PAGE URL:
+   http://localhost:3000/student/assessment
+
+🎯 WHAT BUTTONS / OPTIONS TO CLICK:
+   1. You will see 8 AYUSH skill cards with current levels and NSQF badges.
+   2. Find "Panchakarma Therapy Procedures" (or "Nadi Pariksha").
+   3. CLICK: "Take Assessment":
+      -> An interactive modal opens with 5 clinical scenario MCQs!
+   4. Answer the questions:
+      -> Click option A or B on each question.
+      -> Click "Next Question" to proceed through 1 to 5.
+   5. On the 5th question, click the green "Submit & Evaluate" button:
+      -> The system grades the answers live!
+      -> Results screen displays:
+         - New Competency Level (e.g. upgraded to 5/5)
+         - Overall Readiness Index boost
+         - Dynamic Gap Analysis list showing remaining gaps and exact 
+           recommended bridge courses.
+   6. Click "View Personalized Learning Path" (or close the modal).
+
+💬 WHAT TO SAY:
+   "This is our Closed-Loop AI Diagnostic Engine. When a student chooses a domain, 
+   the engine generates 5 adaptive clinical MCQs. When submitted, the loop closes: 
+   the skill level upgrades live in the database, match scores recalibrate, and 
+   targeted bridge courses are identified."
+
+
+--------------------------------------------------------------------------------
+STEP 5: PERSONALIZED LEARNING PATHWAYS (Bridge Courses & Career Roads)
+--------------------------------------------------------------------------------
+📍 PAGE URL:
+   http://localhost:3000/student/learning-path
+
+🎯 WHAT BUTTONS / OPTIONS TO CLICK:
+   1. On the "Skill Bridge Courses" tab:
+      -> Point out the priority badges: 'Critical' (Red), 'High' (Orange), 
+         'Medium' (Yellow).
+      -> Each card shows duration (e.g. 3 Weeks), NSQF Level, credit hours, 
+         and premier providers like AIIA, NIA Jaipur, and NMPB.
+   2. CLICK THE TAB: "Career Pathways" (next to Skill Bridge Courses):
+      -> Shows 4 interactive career tracks:
+         - Panchakarma Specialist
+         - Ayurveda Clinical Researcher
+         - Integrative Medicine Practitioner
+         - AYUSH Quality Assurance Officer
+      -> Shows estimated salary packages, demand growth, and required skills.
+
+💬 WHAT TO SAY:
+   "Here, AI converts skill gaps into actionable NSQF-aligned bridge courses. 
+   Under the Career Pathways tab, scholars can explore real industry trajectories 
+   with transparent salary projections and market openings."
+
+
+--------------------------------------------------------------------------------
+STEP 6: VERIFIED DIGITAL PORTFOLIO (Digital Passport & Cryptographic Seal)
+--------------------------------------------------------------------------------
+📍 PAGE URL:
+   http://localhost:3000/student/portfolio
+
+🎯 WHAT BUTTONS / OPTIONS TO CLICK:
+   1. Point out the top header:
+      -> Verification Tier Badge: "Gold Scholar" (or Silver/Platinum).
+      -> AI Competency Circle: 84%.
+      -> NSQF Level Badge: Level 7.
+   2. Point out the AI-Generated Executive Summary paragraph.
+   3. Scroll to the "6 Cryptographic Micro-Credentials / Verified Badges" grid:
+      -> Badges for Panchakarma Master, Nadi Diagnostics, APAAR Credits, etc.
+   4. Scroll to the dark cryptographic section at the bottom:
+      -> Point out the SHA-256 Hash and QR Code.
+      -> Click the "Copy Hash" button: shows "Copied!" feedback.
+   5. CLICK: "Export Official PDF" (top right button):
+      -> Opens the clean print/PDF dialog formatted for hospital submission.
+
+💬 WHAT TO SAY:
+   "KaryaSetu replaces paper CVs with this Verifiable Digital Skill Passport. 
+   It includes dynamic tiering, 6 micro-credential badges, DigiLocker verified 
+   APAAR credits, and a tamper-proof SHA-256 cryptographic signature."
+
+
+--------------------------------------------------------------------------------
+STEP 7: RECRUITER & INDUSTRY PORTAL (Applicant Tracking & Feedback Loop)
+--------------------------------------------------------------------------------
+📍 PAGE URL:
+   http://localhost:3000/industry/applicants
+   (Also check: http://localhost:3000/industry/dashboard)
+
+🎯 WHAT BUTTONS / OPTIONS TO CLICK:
+   1. Open the Applicants Pipeline page:
+      -> Candidates are ranked in descending order by AI Match Score (92%, 81%, 78%).
+   2. Point out the status tags: 'Applied', 'Under Review', 'Shortlisted', 'Selected'.
+   3. CLICK ANY STATUS DROPDOWN OR BUTTON (e.g. change an applicant to 'Selected'):
+      -> This triggers the Feature 7 Automated Feedback Loop:
+         - The student's readiness index gets an automated +2% boost.
+         - The matching engine recalibrates live in the background.
+
+💬 WHAT TO SAY:
+   "Recruiters don't sift through stacks of paper. Candidates appear pre-screened 
+   and ranked by AI match score. When a recruiter clicks 'Selected', it closes 
+   our continuous feedback loop, boosting student readiness and recalibrating 
+   engine weights."
+
+
+--------------------------------------------------------------------------------
+STEP 8: INSTITUTION DEAN ANALYTICS (Real-Time Telemetry & Skill Demands)
+--------------------------------------------------------------------------------
+📍 PAGE URL:
+   http://localhost:3000/institution/analytics
+   (Also check: http://localhost:3000/institution/verify)
+
+🎯 WHAT BUTTONS / OPTIONS TO CLICK:
+   1. On `/institution/analytics`:
+      -> Point out the 4 KPI stat cards: Placement Ratio (88.4%), Active 
+         Residencies (42), Average Stipend (₹28,500/mo), AI Vector Match (84%).
+      -> Point out the "Placement Conversion Funnel": Applied -> Shortlisted -> Selected.
+      -> Point out the "Real-Time Recruiter Skill Demand" horizontal bars.
+      -> Point out the "Fastest-Growing Emerging AYUSH Skills" grid 
+         (ABDM EHR +67%, Bhasma QA +48%).
+   2. Visit `/institution/verify`:
+      -> Shows the Dean attestation queue where colleges verify student DigiLocker 
+         enrollments and apply the official institutional seal.
+
+💬 WHAT TO SAY:
+   "University Deans and Government authorities gain real-time telemetry on which 
+   skills industry is actually recruiting for, allowing colleges to adapt their 
+   curricula ahead of placement season."
+
+
+--------------------------------------------------------------------------------
+STEP 9: THE FLOATING AI COPILOT — "AYUSH AI SAARTHI"
+--------------------------------------------------------------------------------
+📍 WHERE TO FIND IT:
+   Bottom-right corner on ANY page (the floating orange robot bubble).
+
+🎯 WHAT BUTTONS / OPTIONS TO CLICK:
+   1. Click the floating orange robot bubble:
+      -> The chat window slides open!
+   2. Ask a clinical question (Type or speak into the mic):
+      -> Prompt: "What are the permissible heavy metal limits for Bhasma?"
+      -> Or click one of the quick suggestion pills.
+   3. Look at the response:
+      -> Provides accurate Ayurvedic Pharmacopoeia of India (AFI) PPM limits.
+   4. Point out the Voice Audio Readout icon and the embedded Action Buttons 
+      (like "Sync ABC Credits" or "Take Skill Assessment").
+
+💬 WHAT TO SAY:
+   "On every page, scholars and practitioners have access to Ayush AI Saarthi, 
+   a clinical copilot equipped with voice STT/TTS and trained on classical 
+   Ayurvedic pharmacopoeia standards with zero-dependency offline fallback."
+
+================================================================================
+                    END OF STEP-BY-STEP DEMO GUIDE
+================================================================================
