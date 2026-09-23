@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
 import { useApp } from '@/lib/store';
+import { usePathname } from 'next/navigation';
 
 declare global {
   interface Window {
@@ -13,13 +14,13 @@ declare global {
 
 /**
  * GoogleTranslate Component
- * Note: Auto-translation is disabled.
- * The site only translates when the user explicitly clicks the Language button in the Navbar or Top Banner.
+ * Auto-translation is disabled on initial load.
+ * Full-site text changes only when the user clicks the Language toggle button.
  */
 export default function GoogleTranslate() {
   const { language } = useApp();
+  const pathname = usePathname();
   const initializedRef = useRef(false);
-  const firstRenderRef = useRef(true);
 
   useEffect(() => {
     window.googleTranslateElementInit = () => {
@@ -29,7 +30,6 @@ export default function GoogleTranslate() {
             pageLanguage: 'en',
             includedLanguages: 'en,hi',
             autoDisplay: false,
-            layout: window.google.translate.TranslateElement.InlineLayout?.SIMPLE,
           },
           'google_translate_element'
         );
@@ -42,50 +42,59 @@ export default function GoogleTranslate() {
     }
   }, []);
 
-  // Synchronize Google Translate only when language changes via button click
+  // When user switches to 'hi', translate full site text (including on page navigation)
   useEffect(() => {
-    // Skip auto-translating on first render if default language is English
-    if (firstRenderRef.current) {
-      firstRenderRef.current = false;
-      if (language === 'en') {
-        // Clear any Google Translate cookies on first load so page is never auto-translated
-        if (typeof document !== 'undefined') {
-          document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          document.cookie = 'googtrans=/en/en; path=/;';
+    if (language === 'hi') {
+      const applyHindi = () => {
+        const select = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
+        if (select) {
+          if (select.value !== 'hi') {
+            select.value = 'hi';
+            select.dispatchEvent(new Event('change'));
+          }
         }
-        return;
-      }
-    }
+      };
 
-    const applyTranslation = () => {
-      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
-      if (select) {
-        if (select.value !== language) {
-          select.value = language;
+      const t1 = setTimeout(applyHindi, 250);
+      const t2 = setTimeout(applyHindi, 700);
+      const t3 = setTimeout(applyHindi, 1500);
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
+    } else {
+      // When on English, make sure no translation is forced
+      const resetEnglish = () => {
+        const select = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
+        if (select && select.value !== 'en' && select.value !== '') {
+          select.value = 'en';
           select.dispatchEvent(new Event('change'));
         }
-      }
-    };
+      };
 
-    // When switching to English, also clean up the cookie
-    if (language === 'en') {
-      if (typeof document !== 'undefined') {
-        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        document.cookie = 'googtrans=/en/en; path=/;';
-        if (typeof window !== 'undefined' && window.location.hostname) {
-          document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
-          document.cookie = `googtrans=/en/en; path=/; domain=${window.location.hostname};`;
-        }
-      }
+      const t = setTimeout(resetEnglish, 200);
+      return () => clearTimeout(t);
     }
-
-    const t = setTimeout(applyTranslation, 300);
-    return () => clearTimeout(t);
-  }, [language]);
+  }, [language, pathname]);
 
   return (
     <>
-      <div id="google_translate_element" style={{ display: 'none' }} aria-hidden="true" />
+      <div
+        id="google_translate_element"
+        style={{
+          position: 'absolute',
+          top: '-9999px',
+          left: '-9999px',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+          opacity: 0,
+          pointerEvents: 'none',
+        }}
+        aria-hidden="true"
+      />
       <Script
         id="google-translate-script"
         src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
