@@ -43,6 +43,7 @@ export default function GovTopBanner() {
               onClick={() => adjustFontSize('sm')}
               className="h-6 px-1.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition-colors flex items-center justify-center min-w-[22px]"
               title="Decrease Font Size"
+              aria-label="Decrease Font Size"
             >
               A-
             </button>
@@ -51,6 +52,7 @@ export default function GovTopBanner() {
               onClick={() => adjustFontSize('md')}
               className="h-6 px-1.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold text-slate-900 dark:text-slate-100 transition-colors flex items-center justify-center min-w-[22px]"
               title="Reset Font Size"
+              aria-label="Reset Font Size"
             >
               A
             </button>
@@ -59,6 +61,7 @@ export default function GovTopBanner() {
               onClick={() => adjustFontSize('lg')}
               className="h-6 px-1.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition-colors flex items-center justify-center min-w-[22px]"
               title="Increase Font Size"
+              aria-label="Increase Font Size"
             >
               A+
             </button>

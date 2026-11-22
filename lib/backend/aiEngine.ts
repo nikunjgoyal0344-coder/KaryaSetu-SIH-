@@ -1,5 +1,5 @@
-import { Opportunity, StudentSkill, SkillGapItem } from '../matchingEngine';
-import { StudentProfile } from '../seedData';
+import type { Opportunity, StudentSkill, SkillGapItem } from '../matchingEngine';
+import type { StudentProfile } from '../seedData';
 
 /**
  * High-Performance AI Matching Engine v2
@@ -63,18 +63,18 @@ export function computeContentSimilarity(student: StudentProfile, opportunity: O
     .toLowerCase();
 
   let matchedKeywords = 0;
-  let totalKeywords = 0;
+  let unionKeywords = 0;
 
   for (const keywords of Object.values(DOMAIN_KEYWORD_CORPUS)) {
     for (const keyword of keywords) {
-      totalKeywords++;
       const studentHas = studentText.includes(keyword.toLowerCase());
       const oppHas = oppText.includes(keyword.toLowerCase());
+      if (studentHas || oppHas) unionKeywords++;
       if (studentHas && oppHas) matchedKeywords++;
     }
   }
 
-  return totalKeywords > 0 ? matchedKeywords / totalKeywords : 0;
+  return unionKeywords > 0 ? matchedKeywords / unionKeywords : 0;
 }
 
 export interface FeatureVector {
@@ -189,13 +189,13 @@ export function rankOpportunitiesWithAI(
     // Layer 2: Content-Based Filtering (TF-IDF keyword overlap)
     const contentSim = computeContentSimilarity(student, opp);
 
-    // Layer 3: Domain Affinity Bonus
+    // Layer 3: Domain Affinity Bonus (normalized to [0, 1])
     let domainBonus = 0;
     if (opp.targetDomain.some((d) => student.interests.includes(d))) {
-      domainBonus += 0.08;
+      domainBonus += 0.60;
     }
     if (opp.mode === student.preferredMode || opp.mode === 'Hybrid') {
-      domainBonus += 0.05;
+      domainBonus += 0.40;
     }
 
     // Composite Score: 55% Vector Cosine + 25% Content Filtering + 20% Domain Affinity

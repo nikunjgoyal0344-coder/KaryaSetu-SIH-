@@ -26,6 +26,7 @@ export default function WallpaperToggle({
         type="button"
         onClick={() => setWallpaperMode('live')}
         title="Live Interactive Botanical/Particle Wallpaper"
+        aria-label="Switch to live interactive botanical and particle wallpaper"
         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold transition-all ${
           wallpaperMode === 'live'
             ? 'bg-white dark:bg-slate-900 text-emerald-800 dark:text-emerald-400 shadow-xs border border-slate-200/70 dark:border-slate-700'
@@ -41,6 +42,7 @@ export default function WallpaperToggle({
         type="button"
         onClick={() => setWallpaperMode('plain')}
         title="Plain Solid Matte Neutral Background (Zero Motion)"
+        aria-label="Switch to plain solid neutral background with zero motion"
         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold transition-all ${
           wallpaperMode === 'plain'
             ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs border border-slate-200/70 dark:border-slate-700'

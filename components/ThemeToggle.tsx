@@ -17,6 +17,7 @@ export default function ThemeToggle({ showLabel = false, className = '' }: Theme
       type="button"
       onClick={toggleTheme}
       title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+      aria-label={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
       className={`flex items-center gap-2 p-2 rounded-xl transition-all border ${
         theme === 'dark'
           ? 'bg-slate-800 hover:bg-slate-700 text-amber-300 border-slate-700 shadow-xs'

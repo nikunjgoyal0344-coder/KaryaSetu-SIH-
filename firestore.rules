@@ -1,0 +1,452 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// This security rules file governs KaryaSetu (National Ayush & Life
+// Sciences Skill-to-Career Verification Grid) and assumes the following schemas:
+//
+// Collection: /students/{studentId}
+// Document ID: Matches student user UID (request.auth.uid)
+// Fields:
+//   - id: string (required, 1-64 chars) - Unique identifier matching document ID
+//   - name: string (required, 1-100 chars) - Full name of the student
+//   - email: string (required, valid email, 1-100 chars) - Student's academic email
+//   - avatar: string (optional, 0-500 chars) - Profile photo URL
+//   - college: string (required, 1-150 chars) - Affiliated Ayush college / institution
+//   - degree: string (required, 1-100 chars) - Degree program (e.g., BAMS, MD Ayurveda)
+//   - year: string (required, 1-50 chars) - Academic year / professional stage
+//   - cgpa: number (required, 0.0 - 10.0) - Cumulative Grade Point Average
+//   - readinessScore: number (required, 0 - 100) - Ayush career readiness benchmark
+//   - prakriti: string (optional, 1-50 chars) - Ayurvedic constitution classification
+//   - preferredMode: string (optional, 'On-site' | 'Remote' | 'Hybrid')
+//   - preferredLocation: string (optional, 0-100 chars) - Preferred posting locations
+//   - interests: list of strings (optional, max 30 items) - Clinical & research interests
+//   - skills: list of maps (optional, max 50 items) - Skill assessments and faculty endorsements
+//   - bio: string (optional, 0-2000 chars) - Student biography & clinical aspirations
+//   - isInstitutionVerified: bool (optional) - Official verification flag (Faculty/Institution only)
+//   - institutionVerificationDate: string (optional, 0-100 chars) - Timestamp of verification
+//   - completedCertificates: list of maps (optional, max 50 items) - Verified certificates
+//   - projects: list of maps (optional, max 50 items) - Clinical case studies and research
+//   - abcId: string (optional, 0-50 chars) - Academic Bank of Credits / APAAR ID
+//   - isAbcLinked: bool (optional) - Status of DigiLocker ABC linkage
+//   - abcCredits: number (optional, 0 - 500) - Total verified academic credits
+//   - abcLastSynced: string (optional, 0-100 chars) - Last ABC synchronization timestamp
+//   - abcInstitution: string (optional, 0-150 chars) - ABC awarding institution
+//   - abcCreditBreakdown: list of maps (optional, max 30 items) - Categorized NSQF credits
+//   - createdAt: timestamp (optional)
+//   - updatedAt: timestamp (optional)
+//
+// Collection: /opportunities/{opportunityId}
+// Document ID: Auto-generated or prefixed slug (e.g. opp-123456789)
+// Fields:
+//   - id: string (optional/required, 1-64 chars)
+//   - title: string (required, 1-150 chars) - Internship / Job / Project title
+//   - company: string (required, 1-150 chars) - Posting organization / research facility
+//   - employerId: string (optional, 1-64 chars) - UID of the posting industry partner
+//   - companyLogo: string (optional, 0-500 chars)
+//   - category: string (required, 'Internship' | 'Entry-Level Job' | 'Live Project' | 'Faculty FDP')
+//   - location: string (required, 1-150 chars) - Geographic posting location
+//   - mode: string (required, 'On-site' | 'Remote' | 'Hybrid')
+//   - duration: string (required, 1-50 chars) - Program duration (e.g. '6 Months')
+//   - stipend: string (required, 1-50 chars) - Remuneration details
+//   - minEligibility: string (required, 1-200 chars) - Minimum academic eligibility
+//   - targetDomain: list of strings (optional, max 20 items) - Domain tags
+//   - description: string (required, 1-5000 chars) - Scope of clinical residency / work
+//   - postedAt: string (optional, 0-50 chars)
+//   - applicantsCount: number (optional, >= 0)
+//   - requiredSkills: list of maps (optional, max 30 items)
+//   - createdAt: timestamp (optional)
+//   - updatedAt: timestamp (optional)
+//
+// Collection: /applications/{applicationId}
+// Document ID: Auto-generated or prefixed slug (e.g. app-123456789)
+// Fields:
+//   - id: string (optional/required, 1-64 chars)
+//   - opportunityId: string (required, 1-100 chars) - Reference to opportunities collection
+//   - opportunityTitle: string (optional, 0-150 chars)
+//   - company: string (optional, 0-150 chars)
+//   - employerId: string (optional, 0-64 chars) - Industry UID for direct ownership checks
+//   - studentId: string (required/optional, 1-64 chars) - UID of applicant student
+//   - userId: string (optional, 1-64 chars) - Alternative student UID mapping
+//   - studentName: string (optional, 0-100 chars)
+//   - studentCollege: string (optional, 0-150 chars)
+//   - appliedDate: string (optional, 0-50 chars)
+//   - appliedAt: timestamp (optional)
+//   - status: string (required, 'Applied' | 'Under Review' | 'Shortlisted' | 'Selected' | 'Rejected')
+//   - matchScore: number (optional, 0 - 100)
+//   - updatedAt: timestamp (optional)
+//
+// Collection: /notifications/{notificationId}
+// Document ID: Auto-generated or prefixed slug (e.g. notif-123456789)
+// Fields:
+//   - id: string (optional/required, 1-64 chars)
+//   - userId: string (required, 1-64 chars) - Recipient UID
+//   - recipientId: string (optional, 1-64 chars) - Alternative recipient identifier
+//   - title: string (required, 1-150 chars)
+//   - message: string (required, 1-1000 chars)
+//   - type: string (required, 'selection' | 'endorsement' | 'recommendation' | 'verification' | 'opportunity' | 'system')
+//   - read: bool (required) - Read status
+//   - link: string (optional, 0-500 chars)
+//   - timestamp: string / timestamp (optional)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Global Helper Functions
+    // ===============================================================
+
+    // Check if user is authenticated with Firebase Auth
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Extract role from custom claims or default to empty string
+    function getUserRole() {
+      return isAuthenticated() && ('role' in request.auth.token) ? request.auth.token.role : '';
+    }
+
+    // Check if user has a specific RBAC role
+    function hasRole(role) {
+      return isAuthenticated() && (
+        getUserRole() == role ||
+        (request.auth.token.keys().hasAll(['roles']) && role in request.auth.token.roles)
+      );
+    }
+
+    // Check if user possesses administrative authority
+    function isAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token.keys().hasAll(['admin']) && request.auth.token.admin == true) ||
+        getUserRole() == 'admin' ||
+        (request.auth.token.keys().hasAll(['email']) && request.auth.token.email.matches('.*@aiia\\.gov\\.in$') && (hasRole('institution') || hasRole('faculty')))
+      );
+    }
+
+    // Direct user UID ownership check
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Document UID field ownership check
+    function isDocOwner(uidField) {
+      return isAuthenticated() && uidField in resource.data && request.auth.uid == resource.data[uidField];
+    }
+
+    // UID immutability check on create
+    function uidUnchanged(userId) {
+      return !('id' in request.resource.data) || request.resource.data.id == userId;
+    }
+
+    // Verify specified immutable fields were not altered
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // Validate that only permitted fields are present in payload
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Validate email format
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // Validate optional string with length bounds
+    function isValidOptionalString(data, field, minLen, maxLen) {
+      return !(field in data) || (
+        data[field] is string &&
+        data[field].size() >= minLen &&
+        data[field].size() <= maxLen
+      );
+    }
+
+    // Validate optional list with size bounds
+    function isValidOptionalList(data, field, maxSize) {
+      return !(field in data) || (
+        data[field] is list &&
+        data[field].size() <= maxSize
+      );
+    }
+
+    // Check if opportunity exists and belongs to current employer
+    function isOpportunityEmployer(oppId) {
+      return exists(/databases/$(database)/documents/opportunities/$(oppId)) &&
+        'employerId' in get(/databases/$(database)/documents/opportunities/$(oppId)).data &&
+        get(/databases/$(database)/documents/opportunities/$(oppId)).data.employerId == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Domain Validators (Applied across both create & update)
+    // ===============================================================
+
+    // Domain validator for /students/{studentId}
+    function isValidStudent(data) {
+      let allowedFields = [
+        'id', 'name', 'email', 'avatar', 'college', 'degree', 'year', 'cgpa',
+        'readinessScore', 'prakriti', 'preferredMode', 'preferredLocation',
+        'interests', 'skills', 'bio', 'isInstitutionVerified', 'institutionVerificationDate',
+        'completedCertificates', 'projects', 'abcId', 'isAbcLinked', 'abcCredits',
+        'abcLastSynced', 'abcInstitution', 'abcCreditBreakdown', 'createdAt', 'updatedAt'
+      ];
+
+      return hasOnlyAllowedFields(allowedFields) &&
+        // Required Core Identity Fields
+        ('name' in data && data.name is string && data.name.size() > 0 && data.name.size() <= 100) &&
+        ('email' in data && isValidEmail(data.email) && data.email.size() <= 100) &&
+        ('college' in data && data.college is string && data.college.size() > 0 && data.college.size() <= 150) &&
+        ('degree' in data && data.degree is string && data.degree.size() > 0 && data.degree.size() <= 100) &&
+        ('year' in data && data.year is string && data.year.size() > 0 && data.year.size() <= 50) &&
+        ('cgpa' in data && data.cgpa is number && data.cgpa >= 0 && data.cgpa <= 10) &&
+        ('readinessScore' in data && data.readinessScore is number && data.readinessScore >= 0 && data.readinessScore <= 100) &&
+        // Optional Fields & String Length Bounds (Resource Exhaustion Defense)
+        isValidOptionalString(data, 'id', 1, 64) &&
+        isValidOptionalString(data, 'avatar', 0, 500) &&
+        isValidOptionalString(data, 'prakriti', 0, 50) &&
+        isValidOptionalString(data, 'preferredLocation', 0, 100) &&
+        isValidOptionalString(data, 'bio', 0, 2000) &&
+        isValidOptionalString(data, 'abcId', 0, 50) &&
+        isValidOptionalString(data, 'abcLastSynced', 0, 100) &&
+        isValidOptionalString(data, 'abcInstitution', 0, 150) &&
+        isValidOptionalString(data, 'institutionVerificationDate', 0, 100) &&
+        // Enum validation
+        (!( 'preferredMode' in data ) || data.preferredMode in ['On-site', 'Remote', 'Hybrid']) &&
+        // Boolean flags
+        (!( 'isInstitutionVerified' in data ) || data.isInstitutionVerified is bool) &&
+        (!( 'isAbcLinked' in data ) || data.isAbcLinked is bool) &&
+        // Numeric bounds
+        (!( 'abcCredits' in data ) || (data.abcCredits is number && data.abcCredits >= 0 && data.abcCredits <= 500)) &&
+        // List size constraints
+        isValidOptionalList(data, 'interests', 30) &&
+        isValidOptionalList(data, 'skills', 50) &&
+        isValidOptionalList(data, 'completedCertificates', 50) &&
+        isValidOptionalList(data, 'projects', 50) &&
+        isValidOptionalList(data, 'abcCreditBreakdown', 30);
+    }
+
+    // Domain validator for /opportunities/{opportunityId}
+    function isValidOpportunity(data) {
+      let allowedFields = [
+        'id', 'title', 'company', 'employerId', 'companyLogo', 'category',
+        'location', 'mode', 'duration', 'stipend', 'minEligibility',
+        'targetDomain', 'description', 'postedAt', 'applicantsCount',
+        'requiredSkills', 'createdAt', 'updatedAt'
+      ];
+
+      return hasOnlyAllowedFields(allowedFields) &&
+        // Required Fields
+        ('title' in data && data.title is string && data.title.size() > 0 && data.title.size() <= 150) &&
+        ('company' in data && data.company is string && data.company.size() > 0 && data.company.size() <= 150) &&
+        ('category' in data && data.category in ['Internship', 'Entry-Level Job', 'Live Project', 'Faculty FDP']) &&
+        ('location' in data && data.location is string && data.location.size() > 0 && data.location.size() <= 150) &&
+        ('mode' in data && data.mode in ['On-site', 'Remote', 'Hybrid']) &&
+        ('duration' in data && data.duration is string && data.duration.size() > 0 && data.duration.size() <= 50) &&
+        ('stipend' in data && data.stipend is string && data.stipend.size() > 0 && data.stipend.size() <= 50) &&
+        ('minEligibility' in data && data.minEligibility is string && data.minEligibility.size() > 0 && data.minEligibility.size() <= 200) &&
+        ('description' in data && data.description is string && data.description.size() > 0 && data.description.size() <= 5000) &&
+        // Optional Fields with Bounds
+        isValidOptionalString(data, 'id', 1, 64) &&
+        isValidOptionalString(data, 'employerId', 1, 64) &&
+        isValidOptionalString(data, 'companyLogo', 0, 500) &&
+        isValidOptionalString(data, 'postedAt', 0, 50) &&
+        (!( 'applicantsCount' in data ) || (data.applicantsCount is number && data.applicantsCount >= 0)) &&
+        isValidOptionalList(data, 'targetDomain', 20) &&
+        isValidOptionalList(data, 'requiredSkills', 30);
+    }
+
+    // Domain validator for /applications/{applicationId}
+    function isValidApplication(data) {
+      let allowedFields = [
+        'id', 'opportunityId', 'opportunityTitle', 'company', 'employerId',
+        'studentId', 'userId', 'studentName', 'studentCollege',
+        'appliedDate', 'appliedAt', 'status', 'matchScore', 'updatedAt'
+      ];
+
+      return hasOnlyAllowedFields(allowedFields) &&
+        // Required Fields
+        ('opportunityId' in data && data.opportunityId is string && data.opportunityId.size() > 0 && data.opportunityId.size() <= 100) &&
+        ('status' in data && data.status in ['Applied', 'Under Review', 'Shortlisted', 'Selected', 'Rejected']) &&
+        // Optional Fields with bounds
+        isValidOptionalString(data, 'id', 1, 64) &&
+        isValidOptionalString(data, 'opportunityTitle', 0, 150) &&
+        isValidOptionalString(data, 'company', 0, 150) &&
+        isValidOptionalString(data, 'employerId', 0, 64) &&
+        isValidOptionalString(data, 'studentId', 0, 64) &&
+        isValidOptionalString(data, 'userId', 0, 64) &&
+        isValidOptionalString(data, 'studentName', 0, 100) &&
+        isValidOptionalString(data, 'studentCollege', 0, 150) &&
+        isValidOptionalString(data, 'appliedDate', 0, 50) &&
+        (!( 'matchScore' in data ) || (data.matchScore is number && data.matchScore >= 0 && data.matchScore <= 100));
+    }
+
+    // Domain validator for /notifications/{notificationId}
+    function isValidNotification(data) {
+      let allowedFields = [
+        'id', 'userId', 'recipientId', 'title', 'message', 'type', 'read', 'link', 'timestamp'
+      ];
+
+      return hasOnlyAllowedFields(allowedFields) &&
+        ('title' in data && data.title is string && data.title.size() > 0 && data.title.size() <= 150) &&
+        ('message' in data && data.message is string && data.message.size() > 0 && data.message.size() <= 1000) &&
+        ('type' in data && data.type in ['selection', 'endorsement', 'recommendation', 'verification', 'opportunity', 'system']) &&
+        ('read' in data && data.read is bool) &&
+        (('userId' in data && data.userId is string && data.userId.size() > 0 && data.userId.size() <= 64) ||
+         ('recipientId' in data && data.recipientId is string && data.recipientId.size() > 0 && data.recipientId.size() <= 64)) &&
+        isValidOptionalString(data, 'id', 1, 64) &&
+        isValidOptionalString(data, 'link', 0, 500);
+    }
+
+    // ===============================================================
+    // Collection Security Rules
+    // ===============================================================
+
+    // 1. /students/{studentId}
+    match /students/{studentId} {
+      // Read: Any authenticated user can view student profiles (facilitates hiring & endorsements)
+      allow read: if isAuthenticated();
+
+      // Create: Only the student owner matching the document ID can register their profile
+      // Defense against Privilege Escalation: Student cannot set themselves as institution-verified upon creation
+      allow create: if isOwner(studentId) &&
+        isValidStudent(request.resource.data) &&
+        uidUnchanged(studentId) &&
+        (!('isInstitutionVerified' in request.resource.data) || request.resource.data.isInstitutionVerified == false) &&
+        (!('institutionVerificationDate' in request.resource.data) || request.resource.data.institutionVerificationDate == null);
+
+      // Update:
+      //  - Path A: Student owner can update their own details, but CANNOT modify sensitive verification fields
+      //  - Path B: Faculty, Institution, or Admin users can update verification & skill endorsement fields
+      allow update: if isAuthenticated() &&
+        isValidStudent(request.resource.data) &&
+        (
+          // Student Owner Update (Verification fields strictly locked down)
+          (
+            isOwner(studentId) &&
+            areImmutableFieldsUnchanged(['isInstitutionVerified', 'institutionVerificationDate']) &&
+            (!('id' in request.resource.data) || request.resource.data.id == resource.data.id)
+          ) ||
+          // Faculty or Institution Endorsement / Verification
+          (
+            (hasRole('faculty') || hasRole('institution') || isAdmin()) &&
+            (!('id' in request.resource.data) || request.resource.data.id == resource.data.id) &&
+            (!('email' in request.resource.data) || request.resource.data.email == resource.data.email)
+          )
+        );
+
+      // Delete: Restricted to system administrators only
+      allow delete: if isAdmin();
+    }
+
+    // 2. /opportunities/{opportunityId}
+    match /opportunities/{opportunityId} {
+      // Read: Public and all authenticated users (students, faculty, public visitors)
+      allow read: if true;
+
+      // Create: Authenticated users with 'industry' role or Admins
+      allow create: if isAuthenticated() &&
+        (hasRole('industry') || isAdmin()) &&
+        isValidOpportunity(request.resource.data) &&
+        (!('employerId' in request.resource.data) || request.resource.data.employerId == request.auth.uid);
+
+      // Update: Industry employer who owns the opportunity or Admin
+      allow update: if isAuthenticated() &&
+        (hasRole('industry') || isAdmin()) &&
+        isValidOpportunity(request.resource.data) &&
+        areImmutableFieldsUnchanged(['id', 'employerId']) &&
+        (!('employerId' in resource.data) || resource.data.employerId == request.auth.uid || isAdmin());
+
+      // Delete: Industry employer owner or Admin
+      allow delete: if isAuthenticated() &&
+        (hasRole('industry') || isAdmin()) &&
+        (!('employerId' in resource.data) || resource.data.employerId == request.auth.uid || isAdmin());
+    }
+
+    // 3. /applications/{applicationId}
+    match /applications/{applicationId} {
+      // Read: The student who submitted the application or the industry employer who owns the opportunity
+      allow read: if isAuthenticated() && (
+        (resource.data.studentId == request.auth.uid) ||
+        ('userId' in resource.data && resource.data.userId == request.auth.uid) ||
+        (
+          hasRole('industry') && (
+            ('employerId' in resource.data && resource.data.employerId == request.auth.uid) ||
+            isOpportunityEmployer(resource.data.opportunityId)
+          )
+        ) ||
+        isAdmin()
+      );
+
+      // Create: Authenticated students applying for an opportunity
+      // Applications must start with 'Applied' or 'Under Review' status; students cannot self-shortlist/select
+      allow create: if isAuthenticated() &&
+        (hasRole('student') || (!hasRole('industry') && !hasRole('faculty') && !hasRole('institution'))) &&
+        isValidApplication(request.resource.data) &&
+        (
+          ('studentId' in request.resource.data && request.resource.data.studentId == request.auth.uid) ||
+          ('userId' in request.resource.data && request.resource.data.userId == request.auth.uid)
+        ) &&
+        (request.resource.data.status in ['Applied', 'Under Review']);
+
+      // Update: Industry employer updating application status (Shortlisted, Selected, Rejected)
+      // Preserves original application metadata (studentId, opportunityId, appliedAt, etc.)
+      allow update: if isAuthenticated() &&
+        (hasRole('industry') || isAdmin()) &&
+        (
+          ('employerId' in resource.data && resource.data.employerId == request.auth.uid) ||
+          isOpportunityEmployer(resource.data.opportunityId) ||
+          isAdmin()
+        ) &&
+        isValidApplication(request.resource.data) &&
+        areImmutableFieldsUnchanged(['id', 'opportunityId', 'studentId', 'userId', 'appliedAt', 'appliedDate']);
+
+      // Delete: Restricted to system administrators
+      allow delete: if isAdmin();
+    }
+
+    // 4. /notifications/{notificationId}
+    match /notifications/{notificationId} {
+      // Read: Recipient of the notification only
+      allow read: if isAuthenticated() && (
+        ('userId' in resource.data && resource.data.userId == request.auth.uid) ||
+        ('recipientId' in resource.data && resource.data.recipientId == request.auth.uid)
+      );
+
+      // Create: System administrators / backend functions only
+      allow create: if isAdmin() && isValidNotification(request.resource.data);
+
+      // Update:
+      //  - Admins can update any notification
+      //  - Recipients can ONLY mark the notification as read (read: true / false)
+      allow update: if isAuthenticated() && (
+        (isAdmin() && isValidNotification(request.resource.data)) ||
+        (
+          (('userId' in resource.data && resource.data.userId == request.auth.uid) ||
+           ('recipientId' in resource.data && resource.data.recipientId == request.auth.uid)) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']) &&
+          request.resource.data.read is bool
+        )
+      );
+
+      // Delete: Recipient dismissing notification or System admin
+      allow delete: if isAuthenticated() && (
+        isAdmin() ||
+        ('userId' in resource.data && resource.data.userId == request.auth.uid) ||
+        ('recipientId' in resource.data && resource.data.recipientId == request.auth.uid)
+      );
+    }
+
+    // ===============================================================
+    // Root Fallback Deny-All Rule
+    // ===============================================================
+    // Guarantees safe default deny for any unspecified collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

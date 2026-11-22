@@ -83,14 +83,24 @@ export async function POST(req: NextRequest) {
  *   - Shortlisted → congratulations notification
  * After ANY status change: matching engine recalibration + new-matches notification
  */
+const ALLOWED_APPLICATION_STATUSES = ['Applied', 'Under Review', 'Shortlisted', 'Selected', 'Rejected'] as const;
+type ApplicationStatus = (typeof ALLOWED_APPLICATION_STATUSES)[number];
+
 export async function PATCH(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const { applicationId, status } = body;
 
-    if (!applicationId || !status) {
+    if (!applicationId || typeof applicationId !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'applicationId and status are required' },
+        { success: false, error: 'applicationId is required and must be a string' },
+        { status: 400 }
+      );
+    }
+
+    if (!status || !ALLOWED_APPLICATION_STATUSES.includes(status as ApplicationStatus)) {
+      return NextResponse.json(
+        { success: false, error: `Invalid status. Must be one of: ${ALLOWED_APPLICATION_STATUSES.join(', ')}` },
         { status: 400 }
       );
     }

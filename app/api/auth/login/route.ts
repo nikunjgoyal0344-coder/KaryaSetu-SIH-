@@ -2,7 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { db } from '@/lib/backend/db';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'karyasetu-sovereign-secret-2026';
+const ALLOWED_ROLES = ['student', 'industry', 'faculty', 'institution'] as const;
+type StakeholderRole = (typeof ALLOWED_ROLES)[number];
+
+function getJwtSecret(): string {
+  if (process.env.JWT_SECRET) {
+    return process.env.JWT_SECRET;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('CRITICAL SECURITY CONFIGURATION: JWT_SECRET must be defined in production environment.');
+  }
+  return 'karyasetu-sovereign-dev-secret-2026';
+}
 
 /**
  * POST /api/auth/login
@@ -10,21 +21,42 @@ const JWT_SECRET = process.env.JWT_SECRET || 'karyasetu-sovereign-secret-2026';
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { role = 'student', email } = body;
+    const body = await req.json().catch(() => ({}));
+    const rawRole = typeof body.role === 'string' ? body.role.trim() : 'student';
+
+    if (!ALLOWED_ROLES.includes(rawRole as StakeholderRole)) {
+      return NextResponse.json(
+        { success: false, error: `Invalid role specified. Must be one of: ${ALLOWED_ROLES.join(', ')}` },
+        { status: 400 }
+      );
+    }
+    const role = rawRole as StakeholderRole;
+
+    let email = '';
+    if (typeof body.email === 'string' && body.email.trim().length > 0) {
+      email = body.email.trim().slice(0, 254);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid email address format' },
+          { status: 400 }
+        );
+      }
+    }
 
     const user = db.getUser(role);
+    const resolvedEmail = email || user.email;
+    const secret = getJwtSecret();
 
     // Sign stateless JWT token
     const token = jwt.sign(
       {
         sub: user.id,
         name: user.name,
-        email: email || user.email,
+        email: resolvedEmail,
         role: user.role,
         affiliation: user.affiliation,
       },
-      JWT_SECRET,
+      secret,
       { expiresIn: '7d' }
     );
 
@@ -33,7 +65,7 @@ export async function POST(req: NextRequest) {
       token,
       user: {
         ...user,
-        email: email || user.email,
+        email: resolvedEmail,
       },
       expiresIn: '7d',
     });
