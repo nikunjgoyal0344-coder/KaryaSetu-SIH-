@@ -22,18 +22,18 @@
    - Automatically falls back to the indexed in-memory repository (`lib/backend/db.ts`) when offline or unconfigured.
 
 4. **Security & Accessibility (GIGW / WCAG 2.1 AA+)**
-   - Centralized security utilities (`lib/security.ts`) providing fail-closed JWT secret resolution (`HS256`), input sanitization, ABC ID format validation, scrypt password hashing, HMAC credential signing, and fixed-window rate limiting.
-   - Strict HTTP security headers (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`).
-   - Bilingual English / Hindi (`हिन्दी`) engine, live font-size scaling (`A-`, `A`, `A+`), `prefers-reduced-motion` support, skip-to-content navigation, and full ARIA/keyboard support.
+   - Centralized security utilities (`lib/security.ts`, `lib/auth.ts`, `lib/apiHelpers.ts`) providing fail-closed JWT secret resolution (`HS256`), role-based access control (`ROLE_PERMISSIONS`, optional or strict `REQUIRE_STRICT_AUTH=true` token validation), input sanitization, ABC ID format validation, scrypt password hashing, HMAC credential signing, and fixed-window rate limiting.
+   - Strict HTTP defense headers across `middleware.ts` and `next.config.js` (`Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `X-XSS-Protection`, `Cross-Origin-Opener-Policy`, `Referrer-Policy`, `Permissions-Policy`, and production `Strict-Transport-Security`).
+   - Bilingual English / Hindi (`हिन्दी`) engine, live font-size scaling (`A-`, `A`, `A+`), `prefers-reduced-motion` scroll animations (`ScrollProgressBar`, `ScrollReveal`), skip-to-content navigation, and full ARIA/keyboard support.
 
 ---
 
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router), React 18, TypeScript (Strict)
-- **Styling**: Tailwind CSS
+- **Styling & UX**: Tailwind CSS, GPU-composited `IntersectionObserver` scroll animations
 - **Backend & Auth**: Firebase (`firebase`, `firebase-admin`), JWT (`jsonwebtoken`), `bcryptjs`
-- **Testing**: Node.js Native Test Runner (`node --test --experimental-strip-types`)
+- **Testing & CI**: Node.js Native Test Runner (`node --test --experimental-strip-types`) with TSX component SSR checks & GitHub Actions workflow (`.github/workflows/ci.yml`)
 
 ---
 
@@ -49,7 +49,9 @@ cp .env.example .env.local
 # 3. Start local development server
 npm run dev
 
-# 4. Run TypeScript static verification & full test suite
+# 4. Run full quality, security, test coverage, and build verification
+npm run lint
 npx tsc --noEmit
-npm test
+npm run test:coverage
+npm run build
 ```

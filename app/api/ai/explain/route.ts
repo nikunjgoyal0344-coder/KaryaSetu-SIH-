@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
 import { rankOpportunitiesWithAI } from '@/lib/backend/aiEngine';
 import { sanitizeString } from '@/lib/security';
-import { badRequest, notFound, parseJsonBody, serverError } from '@/lib/apiHelpers';
+import { badRequest, enforceRateLimit, notFound, parseJsonBody, serverError } from '@/lib/apiHelpers';
 import type { StudentProfile } from '@/lib/seedData';
 
 /**
@@ -11,6 +11,9 @@ import type { StudentProfile } from '@/lib/seedData';
  * for a specific opportunity and candidate.
  */
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'ai:explain', 60, 60_000);
+  if (limited) return limited;
+
   try {
     const body = await parseJsonBody<{ opportunityId?: unknown; student?: StudentProfile }>(req);
     if (!body) {

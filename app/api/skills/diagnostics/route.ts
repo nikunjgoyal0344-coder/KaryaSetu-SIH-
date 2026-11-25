@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
 import { clampNumber, sanitizeString } from '@/lib/security';
-import { badRequest, parseJsonBody, serverError } from '@/lib/apiHelpers';
+import { badRequest, enforceRateLimit, parseJsonBody, serverError, verifyOptionalSessionRole } from '@/lib/apiHelpers';
 
 /**
  * POST /api/skills/diagnostics
  * Updates student skill level upon completing clinical diagnostic quiz or bridge course.
  */
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'skills:diagnostics', 40, 60_000);
+  if (limited) return limited;
+
+  const authError = verifyOptionalSessionRole(req, ['student', 'faculty', 'institution']);
+  if (authError) return authError;
+
   try {
     const body = await parseJsonBody<{
       skillId?: unknown;
