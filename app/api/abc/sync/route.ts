@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
+import { formatAbcId, isValidAbcId, sanitizeString } from '@/lib/security';
+import { badRequest, enforceRateLimit, parseJsonBody, serverError, verifyOptionalSessionRole } from '@/lib/apiHelpers';
 
 /**
  * GET /api/abc/sync
@@ -20,11 +22,8 @@ export async function GET() {
       nsqfLevel: 'Level 7 (BAMS Professional)',
       institutionalNode: 'All India Institute of Ayurveda (AIIA)',
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch ABC ID ledger' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('abc/sync:GET', error, 'Failed to fetch ABC ID ledger');
   }
 }
 
@@ -33,13 +32,22 @@ export async function GET() {
  * Links new 12-digit ABC ID or performs a live DigiLocker credit sync.
  */
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'abc:sync', 20, 60_000);
+  if (limited) return limited;
+
+  const authError = verifyOptionalSessionRole(req, ['student', 'institution']);
+  if (authError) return authError;
+
   try {
-    const body = await req.json().catch(() => ({}));
-    const { abcId, action = 'sync' } = body;
+    const body = (await parseJsonBody<{ abcId?: unknown; action?: unknown }>(req)) ?? {};
+    const rawAbcId = typeof body.abcId === 'string' ? sanitizeString(body.abcId, 20) : '';
 
     let updatedStudent;
-    if (abcId) {
-      updatedStudent = db.linkAbcId(abcId);
+    if (rawAbcId) {
+      if (!isValidAbcId(rawAbcId)) {
+        return badRequest('Invalid ABC / APAAR ID. Expected 12 digits (e.g. 8472-1920-3841).');
+      }
+      updatedStudent = db.linkAbcId(formatAbcId(rawAbcId));
     } else {
       updatedStudent = db.syncAbcCredits();
     }
@@ -59,10 +67,7 @@ export async function POST(req: NextRequest) {
       lastSynced: updatedStudent.abcLastSynced,
       status: 'Synchronized with National Academic Depository (NAD)',
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'ABC synchronization failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('abc/sync:POST', error, 'ABC synchronization failed');
   }
 }

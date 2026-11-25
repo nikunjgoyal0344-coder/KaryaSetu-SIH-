@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
+import { isAllowedEnum, sanitizeString } from '@/lib/security';
+import { badRequest, enforceRateLimit, parseJsonBody, serverError } from '@/lib/apiHelpers';
 
 /**
  * POST /api/ai/feedback
@@ -18,43 +20,46 @@ import { db } from '@/lib/backend/db';
  *
  * After processing: re-ranks top 3 opportunities via matching engine.
  */
+
+const VALID_FEEDBACK_TYPES = ['placement_outcome', 'course_completed', 'skill_practised'] as const;
+const VALID_FEEDBACK_OUTCOMES = ['positive', 'negative', 'neutral'] as const;
+
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'ai:feedback', 40, 60_000);
+  if (limited) return limited;
+
   try {
-    const body = await req.json();
-    const { type, skillId, outcome, details } = body as {
-      type: 'placement_outcome' | 'course_completed' | 'skill_practised';
-      skillId: string;
-      outcome: 'positive' | 'negative' | 'neutral';
-      details?: string;
-    };
+    const body = await parseJsonBody<{
+      type?: unknown;
+      skillId?: unknown;
+      outcome?: unknown;
+      details?: unknown;
+    }>(req);
 
-    // ── Validation ─────────────────────────────────────────────────────────────
-    if (!type || !skillId || !outcome) {
-      return NextResponse.json(
-        { success: false, error: 'type, skillId, and outcome are required' },
-        { status: 400 }
-      );
+    if (!body) {
+      return badRequest('Invalid JSON request body');
     }
 
-    const validTypes = ['placement_outcome', 'course_completed', 'skill_practised'];
-    const validOutcomes = ['positive', 'negative', 'neutral'];
+    const skillId = sanitizeString(body.skillId, 80);
+    const details = sanitizeString(body.details, 500);
 
-    if (!validTypes.includes(type)) {
-      return NextResponse.json(
-        { success: false, error: `Invalid type. Must be one of: ${validTypes.join(', ')}` },
-        { status: 400 }
-      );
+    if (!body.type || !skillId || !body.outcome) {
+      return badRequest('type, skillId, and outcome are required');
     }
 
-    if (!validOutcomes.includes(outcome)) {
-      return NextResponse.json(
-        { success: false, error: `Invalid outcome. Must be one of: ${validOutcomes.join(', ')}` },
-        { status: 400 }
-      );
+    if (!isAllowedEnum(body.type, VALID_FEEDBACK_TYPES)) {
+      return badRequest(`Invalid type. Must be one of: ${VALID_FEEDBACK_TYPES.join(', ')}`);
     }
+
+    if (!isAllowedEnum(body.outcome, VALID_FEEDBACK_OUTCOMES)) {
+      return badRequest(`Invalid outcome. Must be one of: ${VALID_FEEDBACK_OUTCOMES.join(', ')}`);
+    }
+
+    const type = body.type;
+    const outcome = body.outcome;
 
     // ── Record feedback in training loop ───────────────────────────────────────
-    db.recordFeedback(skillId, outcome, details || '');
+    db.recordFeedback(skillId, outcome, details);
 
     const student = db.getStudent();
     const existingSkill = student.skills.find((s) => s.skillId === skillId);
@@ -134,11 +139,8 @@ export async function POST(req: NextRequest) {
       rerankedOpportunities,
       notification,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Feedback processing failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('ai/feedback:POST', error, 'Feedback processing failed');
   }
 }
 
@@ -154,10 +156,7 @@ export async function GET() {
       count: history.length,
       feedbackHistory: history,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch feedback history' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('ai/feedback:GET', error, 'Failed to fetch feedback history');
   }
 }

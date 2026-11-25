@@ -6,16 +6,8 @@ import {
   BookOpen,
   Award,
   CheckCircle2,
-  Users,
-  GraduationCap,
-  Sparkles,
-  Building,
-  ArrowRight,
   ShieldCheck,
-  Calendar,
-  Briefcase,
 } from 'lucide-react';
-import Link from 'next/link';
 
 export default function FacultyDashboard() {
   const { student, endorseStudentSkill, addNotification } = useApp();
@@ -88,7 +80,7 @@ export default function FacultyDashboard() {
                 <CheckCircle2 className="w-8 h-8 text-emerald-700 dark:text-emerald-400 mx-auto mb-2" />
                 <p className="font-bold text-sm">All student skills verified!</p>
                 <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">
-                  Ananya Sharma's portfolio has full institutional faculty backing.
+                  Ananya Sharma&apos;s portfolio has full institutional faculty backing.
                 </p>
               </div>
             ) : (

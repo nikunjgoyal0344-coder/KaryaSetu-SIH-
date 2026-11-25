@@ -21,33 +21,17 @@ import {
   Check,
   Download,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2,
-  Award,
   Zap,
-  BookOpen,
 } from 'lucide-react';
 
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: string;
-  provider?: string;
-  actionType?: string;
-  actionLabel?: string;
-  actionPayload?: any;
-  actionExecuted?: boolean;
-}
-
-const QUICK_PROMPTS = [
-  '⚡ How can I bridge my Rasashastra QA gap?',
-  '🎯 Which internships match my profile best?',
-  '🔬 Explain AFI Bhasma heavy metal limits',
-  '⚕️ SOP for Ksharasutra preparation in Shalya Tantra',
-  '🌿 Panchakarma Shodhana protocols & contraindications',
-  '💳 How many ABC credits do I need to graduate?',
-];
+import {
+  QUICK_PROMPTS,
+  type ChatMessage,
+  type SpeechRecognitionInstance,
+  type SpeechRecognitionResultEventLike,
+  type SpeechRecognitionWindow,
+} from '@/lib/chatConstants';
 
 export default function AiChatbot() {
   const pathname = usePathname();
@@ -66,9 +50,10 @@ export default function AiChatbot() {
   // Voice State (STT & TTS)
   const [isListening, setIsListening] = useState(false);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   // Initialize greeting with dynamic greeting based on time of day
   useEffect(() => {
@@ -91,27 +76,45 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
       provider: 'Google Gemini 1.5 Flash',
     };
     setMessages([greeting]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Load API key from localStorage
+  // Load ephemeral session API key (avoid persistent localStorage storage for secrets)
   useEffect(() => {
     try {
-      const savedKey = localStorage.getItem('karyasetu-gemini-key');
+      const savedKey = sessionStorage.getItem('karyasetu-gemini-key');
       if (savedKey) setApiKey(savedKey);
-    } catch (e) {}
+    } catch {
+      // Ignore storage access errors in restricted browsers
+    }
   }, []);
+
+  // Close chatbot on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        window.speechSynthesis?.cancel();
+        setSpeakingId(null);
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   // Speech Recognition Setup (STT)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const speechWindow = window as SpeechRecognitionWindow;
+      const SpeechRecognition = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.interimResults = false;
         recognition.lang = 'en-IN';
 
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event: SpeechRecognitionResultEventLike) => {
           const transcript = event.results[0][0].transcript;
           setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
           setIsListening(false);
@@ -132,7 +135,8 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
 
   const toggleListening = () => {
     if (!recognitionRef.current) {
-      alert('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
+      setVoiceNotice('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
+      setTimeout(() => setVoiceNotice(null), 5000);
       return;
     }
 
@@ -143,7 +147,7 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
       try {
         recognitionRef.current.start();
         setIsListening(true);
-      } catch (err) {
+      } catch {
         setIsListening(false);
       }
     }
@@ -180,14 +184,16 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
   const saveApiKey = () => {
     try {
       if (apiKey.trim()) {
-        localStorage.setItem('karyasetu-gemini-key', apiKey.trim());
+        sessionStorage.setItem('karyasetu-gemini-key', apiKey.trim());
       } else {
-        localStorage.removeItem('karyasetu-gemini-key');
+        sessionStorage.removeItem('karyasetu-gemini-key');
       }
       setKeySaved(true);
       setTimeout(() => setKeySaved(false), 2500);
       setShowSettings(false);
-    } catch (e) {}
+    } catch {
+      // Ignore storage access errors
+    }
   };
 
   const copyToClipboard = (id: string, content: string) => {
@@ -284,13 +290,14 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
       } else {
         throw new Error(data.error || 'Failed to generate response');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Unable to reach AI mentor';
       setMessages((prev) => [
         ...prev,
         {
           id: `err-${Date.now()}`,
           role: 'assistant',
-          content: `⚠️ Consultation error: ${err.message}. Please verify network connectivity.`,
+          content: `⚠️ Consultation error: ${errMsg}. Please verify network connectivity.`,
           timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           provider: 'System',
         },
@@ -412,6 +419,9 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
       {/* Interactive Chat Window Modal */}
       {isOpen && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="chatbot-dialog-title"
           className={`fixed z-50 transition-all duration-300 ease-out flex flex-col shadow-2xl ${
             isExpanded
               ? 'inset-3 sm:inset-6 md:inset-10 rounded-3xl'
@@ -419,17 +429,17 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
           } bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden`}
         >
           {/* Top Sovereign Indian Tricolor Accent */}
-          <div className="h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808]" />
+          <div className="h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808]" aria-hidden="true" />
 
           {/* Chat Header */}
           <div className="bg-navy-950 px-4 py-3 flex items-center justify-between text-white border-b border-navy-800 shrink-0">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-xl bg-saffron/20 border border-amber-400/50 flex items-center justify-center shrink-0">
-                <Bot className="w-4.5 h-4.5 text-amber-300" />
+                <Bot className="w-4.5 h-4.5 text-amber-300" aria-hidden="true" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-sm tracking-tight text-white truncate">
+                  <span id="chatbot-dialog-title" className="font-bold text-sm tracking-tight text-white truncate">
                     Ayush AI Saarthi
                   </span>
                   <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30 shrink-0">
@@ -437,7 +447,7 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px] text-slate-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" aria-hidden="true" />
                   <span className="truncate">{copilotBadge}</span>
                 </div>
               </div>
@@ -450,32 +460,37 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
                 onClick={downloadTranscript}
                 className="p-1.5 rounded-lg hover:bg-navy-800 text-slate-300 hover:text-white transition-colors"
                 title="Download Consultation Summary (.md)"
+                aria-label="Download consultation summary"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
               <button
                 type="button"
                 onClick={() => setShowSettings(!showSettings)}
                 className="p-1.5 rounded-lg hover:bg-navy-800 text-slate-300 hover:text-white transition-colors"
                 title="Configure Gemini API Key"
+                aria-label="Configure Gemini API key"
+                aria-expanded={showSettings}
               >
-                <Key className="w-3.5 h-3.5 text-amber-300" />
+                <Key className="w-3.5 h-3.5 text-amber-300" aria-hidden="true" />
               </button>
               <button
                 type="button"
                 onClick={handleClearChat}
                 className="p-1.5 rounded-lg hover:bg-navy-800 text-slate-300 hover:text-white transition-colors"
                 title="Reset Conversation"
+                aria-label="Reset conversation"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="hidden sm:inline-flex p-1.5 rounded-lg hover:bg-navy-800 text-slate-300 hover:text-white transition-colors"
                 title={isExpanded ? 'Restore Size' : 'Maximize'}
+                aria-label={isExpanded ? 'Restore chat size' : 'Maximize chat window'}
               >
-                {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                {isExpanded ? <Minimize2 className="w-3.5 h-3.5" aria-hidden="true" /> : <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />}
               </button>
               <button
                 type="button"
@@ -486,8 +501,9 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
                 }}
                 className="p-1.5 rounded-lg hover:bg-navy-800 text-slate-300 hover:text-white transition-colors"
                 title="Close"
+                aria-label="Close Ayush AI Saarthi"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -497,19 +513,20 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
             <div className="p-3.5 bg-slate-50 dark:bg-slate-800/95 border-b border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-2 duration-200 text-xs">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <Key className="w-3.5 h-3.5 text-saffron" />
-                  Custom Google Gemini API Key
+                  <Key className="w-3.5 h-3.5 text-saffron" aria-hidden="true" />
+                  Custom Google Gemini API Key (Session Only)
                 </span>
                 <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
                   {apiKey ? 'Key Configured ✓' : 'Local Fallback Active'}
                 </span>
               </div>
               <p className="text-[11px] text-slate-600 dark:text-slate-400 mb-2">
-                Paste your Gemini API key to activate live Google Cloud reasoning. When left blank, KaryaSetu automatically runs on its built-in Ayush clinical knowledge engine!
+                Paste your Gemini API key for live cloud reasoning. Stored only in ephemeral session memory and cleared on tab close.
               </p>
               <div className="flex gap-2">
                 <input
                   type="password"
+                  aria-label="Custom Google Gemini API Key"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="AIzaSy..."
@@ -584,8 +601,9 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
                             speakingId === m.id ? 'text-saffron animate-pulse font-bold' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
                           }`}
                           title={speakingId === m.id ? 'Stop Reading' : 'Listen with Voice'}
+                          aria-label={speakingId === m.id ? 'Stop reading answer' : 'Listen to answer'}
                         >
-                          {speakingId === m.id ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                          {speakingId === m.id ? <VolumeX className="w-3 h-3" aria-hidden="true" /> : <Volume2 className="w-3 h-3" aria-hidden="true" />}
                         </button>
 
                         {/* Copy Button */}
@@ -594,6 +612,7 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
                           onClick={() => copyToClipboard(m.id, m.content)}
                           className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                           title="Copy Answer"
+                          aria-label="Copy answer to clipboard"
                         >
                           {copiedId === m.id ? (
                             <span className="flex items-center gap-0.5 text-emerald-600 font-bold">
@@ -696,6 +715,15 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
 
           {/* Input Bar with Voice (STT) & Send */}
           <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shrink-0">
+            {voiceNotice && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="mb-2 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-[11px] font-medium"
+              >
+                {voiceNotice}
+              </div>
+            )}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -707,6 +735,7 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
               <button
                 type="button"
                 onClick={toggleListening}
+                aria-label={isListening ? 'Stop voice input' : 'Ask with voice'}
                 className={`p-2.5 rounded-2xl border transition-all shrink-0 ${
                   isListening
                     ? 'bg-rose-600 text-white border-rose-700 animate-pulse shadow-md'
@@ -714,11 +743,12 @@ How can I assist you today? You can speak using the 🎙️ **Microphone**, ask 
                 }`}
                 title={isListening ? 'Listening... Tap to stop' : 'Ask with Voice (Speech-to-Text)'}
               >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                {isListening ? <MicOff className="w-4 h-4" aria-hidden="true" /> : <Mic className="w-4 h-4" aria-hidden="true" />}
               </button>
 
               <input
                 type="text"
+                aria-label="Ask Ayush AI Saarthi a question"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={isListening ? 'Listening to your voice...' : 'Ask clinical doubts, formulations, or placement advice...'}

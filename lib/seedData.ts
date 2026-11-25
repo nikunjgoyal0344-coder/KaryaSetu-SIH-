@@ -1,4 +1,4 @@
-import { Opportunity, StudentSkill } from './matchingEngine';
+import type { Opportunity, StudentSkill } from './matchingEngine';
 
 export interface StudentProfile {
   id: string;

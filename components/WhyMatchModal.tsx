@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MatchBreakdown } from '@/lib/matchingEngine';
 import { X, CheckCircle2, AlertCircle, Sparkles, SlidersHorizontal, ArrowRight } from 'lucide-react';
 
@@ -23,25 +23,43 @@ export default function WhyMatchModal({
   onApply,
   isApplied,
 }: WhyMatchModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="why-match-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
+    >
       <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-800 text-white p-4 sm:p-6 relative shrink-0 border-b border-navy-700/60">
           <button
+            type="button"
             onClick={onClose}
             aria-label="Close modal"
             className="absolute top-4 right-4 text-slate-300 hover:text-white bg-navy-800 p-2 rounded-full transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center border border-navy-700"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
           <div className="flex items-center gap-2 mb-1 text-saffron-light text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="w-4 h-4 text-saffron" />
+            <Sparkles className="w-4 h-4 text-saffron" aria-hidden="true" />
             Explainable AI Matching Engine
           </div>
-          <h3 className="text-lg sm:text-xl font-bold pr-8 text-white">{opportunityTitle}</h3>
+          <h3 id="why-match-modal-title" className="text-lg sm:text-xl font-bold pr-8 text-white">{opportunityTitle}</h3>
           <p className="text-slate-300 text-xs sm:text-sm">{companyName}</p>
 
           <div className="mt-3 sm:mt-4 flex items-center justify-between bg-white/10 backdrop-blur-md rounded-xl p-2.5 sm:p-3 border border-white/15">

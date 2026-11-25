@@ -12,10 +12,6 @@ import {
   ArrowLeft,
   Sparkles,
   Award,
-  CheckCircle2,
-  Briefcase,
-  Layers,
-  Zap,
   Activity,
 } from 'lucide-react';
 
@@ -60,9 +56,16 @@ interface DemandData {
   emergingSkills: EmergingSkill[];
 }
 
+interface FallbackSkillDemand {
+  skill: string;
+  count: number;
+  percentage: number;
+}
+
+type DemandDisplayItem = SkillDemandItem | FallbackSkillDemand;
+
 export default function InstitutionAnalyticsPage() {
   const [demandData, setDemandData] = useState<DemandData | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchDemand() {
@@ -74,8 +77,6 @@ export default function InstitutionAnalyticsPage() {
         }
       } catch (err) {
         console.error('Failed to fetch demand analytics', err);
-      } finally {
-        setLoading(false);
       }
     }
     fetchDemand();
@@ -243,10 +244,10 @@ export default function InstitutionAnalyticsPage() {
           </div>
 
           <div className="space-y-3 pt-2">
-            {(skillDemand.length > 0 ? skillDemand.slice(0, 6) : INSTITUTION_ANALYTICS.topSkillsDemand).map((item: any) => {
-              const skillTitle = item.skillName || item.skill;
-              const demandCount = item.demandCount || item.count || 24;
-              const percentage = item.demandCount ? Math.min(95, item.demandCount * 22) : item.percentage || 70;
+            {(skillDemand.length > 0 ? skillDemand.slice(0, 6) : INSTITUTION_ANALYTICS.topSkillsDemand).map((item: DemandDisplayItem) => {
+              const skillTitle = 'skillName' in item ? item.skillName : item.skill;
+              const demandCount = 'demandCount' in item ? item.demandCount : item.count || 24;
+              const percentage = 'demandCount' in item ? Math.min(95, item.demandCount * 22) : item.percentage || 70;
 
               return (
                 <div key={skillTitle} className="space-y-1">

@@ -3,8 +3,6 @@ import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth, Auth } from 'firebase-admin/auth';
 import { firebaseConfig } from './config';
 
-let adminApp: App;
-
 function getAdminApp(): App {
   if (getApps().length > 0) {
     return getApp();
@@ -31,7 +29,7 @@ function getAdminApp(): App {
   });
 }
 
-adminApp = getAdminApp();
+const adminApp: App = getAdminApp();
 
 export const adminDb: Firestore = getFirestore(adminApp);
 export const adminAuth: Auth = getAuth(adminApp);

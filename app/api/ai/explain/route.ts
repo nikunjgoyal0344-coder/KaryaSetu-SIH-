@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
 import { rankOpportunitiesWithAI } from '@/lib/backend/aiEngine';
+import { sanitizeString } from '@/lib/security';
+import { badRequest, notFound, parseJsonBody, serverError } from '@/lib/apiHelpers';
+import type { StudentProfile } from '@/lib/seedData';
 
 /**
  * POST /api/ai/explain
@@ -9,24 +12,24 @@ import { rankOpportunitiesWithAI } from '@/lib/backend/aiEngine';
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { opportunityId } = body;
-
-    if (!opportunityId) {
-      return NextResponse.json(
-        { success: false, error: 'opportunityId is required' },
-        { status: 400 }
-      );
+    const body = await parseJsonBody<{ opportunityId?: unknown; student?: StudentProfile }>(req);
+    if (!body) {
+      return badRequest('Invalid JSON request body');
     }
 
-    const student = body.student || db.getStudent();
+    const opportunityId = sanitizeString(body.opportunityId, 64);
+    if (!opportunityId) {
+      return badRequest('opportunityId is required');
+    }
+
+    const student =
+      body.student && typeof body.student === 'object' && Array.isArray(body.student.skills)
+        ? body.student
+        : db.getStudent();
     const opportunity = db.getOpportunityById(opportunityId);
 
     if (!opportunity) {
-      return NextResponse.json(
-        { success: false, error: 'Opportunity not found' },
-        { status: 404 }
-      );
+      return notFound('Opportunity not found');
     }
 
     const [matchResult] = rankOpportunitiesWithAI(student, [opportunity]);
@@ -44,10 +47,7 @@ export async function POST(req: NextRequest) {
       criticalGaps: matchResult.criticalGaps,
       remedialRoadmap: matchResult.recommendationRoadmap,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'AI explanation generation failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('ai/explain', error, 'AI explanation generation failed');
   }
 }

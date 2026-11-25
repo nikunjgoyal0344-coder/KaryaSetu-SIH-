@@ -20,15 +20,24 @@ export default function NotificationSystem() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click or Escape key
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const getIcon = (type: string) => {
@@ -52,12 +61,17 @@ export default function NotificationSystem() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Notifications"
+        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
         className="relative p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-hidden"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-5 h-5" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs animate-pulse">
+          <span
+            aria-live="polite"
+            className="absolute top-1.5 right-1.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs animate-pulse"
+          >
             {unreadCount}
           </span>
         )}
@@ -65,7 +79,11 @@ export default function NotificationSystem() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xl shadow-slate-900/20 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div
+          role="region"
+          aria-label="Events and notifications"
+          className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xl shadow-slate-900/20 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+        >
           {/* Header */}
           <div className="p-3.5 px-4 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -101,8 +119,16 @@ export default function NotificationSystem() {
               notifications.map((notif) => (
                 <div
                   key={notif.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => markNotificationRead(notif.id)}
-                  className={`p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors flex items-start gap-3 cursor-pointer ${
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      markNotificationRead(notif.id);
+                    }
+                  }}
+                  className={`p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors flex items-start gap-3 cursor-pointer focus:outline-none focus:ring-2 focus:ring-inset focus:ring-saffron ${
                     !notif.read ? 'bg-emerald-50/30 dark:bg-emerald-950/10' : ''
                   }`}
                 >

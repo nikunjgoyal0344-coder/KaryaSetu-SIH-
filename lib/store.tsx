@@ -1,18 +1,26 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  INITIAL_STUDENT, 
-  INITIAL_OPPORTUNITIES, 
-  INITIAL_APPLICATIONS, 
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
+import {
+  INITIAL_STUDENT,
+  INITIAL_OPPORTUNITIES,
+  INITIAL_APPLICATIONS,
   INITIAL_NOTIFICATIONS,
   INITIAL_UNVERIFIED_STUDENTS,
-  StudentProfile, 
-  ApplicationItem,
-  AppNotification,
-  UnverifiedStudent
+  type StudentProfile,
+  type ApplicationItem,
+  type AppNotification,
+  type UnverifiedStudent,
 } from './seedData';
-import { Opportunity } from './matchingEngine';
+import type { Opportunity } from './matchingEngine';
 
 export type UserRole = 'student' | 'industry' | 'faculty' | 'institution';
 export type ThemeMode = 'light' | 'dark';
@@ -42,63 +50,67 @@ interface AppContextType {
   endorseStudentSkill: (skillId: string, facultyName: string) => void;
   updateSkillLevel: (skillId: string, levelGain: number) => void;
   postNewOpportunity: (opp: Omit<Opportunity, 'id' | 'postedAt' | 'applicantsCount'>) => void;
-  // Notifications
   notifications: AppNotification[];
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
   addNotification: (notif: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => void;
-  // Institution Actions
   unverifiedStudents: UnverifiedStudent[];
   verifyStudent: (studentId: string) => void;
   flagStudent: (studentId: string) => void;
-  // Academic Bank of Credits (ABC ID / APAAR)
   linkAbcId: (abcId: string) => void;
   syncAbcCredits: () => void;
-  // Demo Data Reset
   resetDemoData: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+function safeJsonParse<T>(raw: string | null): T | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<UserRole>('student');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [theme, setTheme] = useState<ThemeMode>('light');
-  const [wallpaperMode, setWallpaperMode] = useState<WallpaperMode>('live');
+  const [wallpaperMode, setWallpaperModeState] = useState<WallpaperMode>('live');
   const [student, setStudent] = useState<StudentProfile>(INITIAL_STUDENT);
   const [opportunities, setOpportunities] = useState<Opportunity[]>(INITIAL_OPPORTUNITIES);
   const [applications, setApplications] = useState<ApplicationItem[]>(INITIAL_APPLICATIONS);
   const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS);
-  const [unverifiedStudents, setUnverifiedStudents] = useState<UnverifiedStudent[]>(INITIAL_UNVERIFIED_STUDENTS);
+  const [unverifiedStudents, setUnverifiedStudents] = useState<UnverifiedStudent[]>(
+    INITIAL_UNVERIFIED_STUDENTS
+  );
   const [language, setLanguageState] = useState<Language>('en');
+  const isHydratedRef = useRef(false);
 
-  // Sync theme, wallpaper, language and dynamic entity state with document and localStorage
+  // Hydrate preferences and persisted domain state once on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('karyasetu-theme') as ThemeMode;
-    const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const savedTheme = localStorage.getItem('karyasetu-theme') as ThemeMode | null;
+    const prefersDark =
+      typeof window !== 'undefined' &&
+      Boolean(window.matchMedia?.('(prefers-color-scheme: dark)').matches);
     const effectiveTheme = savedTheme || (prefersDark ? 'dark' : 'light');
     setTheme(effectiveTheme);
-    if (effectiveTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    }
+    document.documentElement.classList.toggle('dark', effectiveTheme === 'dark');
+    document.documentElement.classList.toggle('light', effectiveTheme !== 'dark');
 
-    const savedWallpaper = localStorage.getItem('karyasetu-wallpaper') as WallpaperMode;
+    const savedWallpaper = localStorage.getItem('karyasetu-wallpaper') as WallpaperMode | null;
     if (savedWallpaper === 'live' || savedWallpaper === 'plain') {
-      setWallpaperMode(savedWallpaper);
+      setWallpaperModeState(savedWallpaper);
     }
 
-    const savedLang = localStorage.getItem('karyasetu-lang') as Language;
+    const savedLang = localStorage.getItem('karyasetu-lang') as Language | null;
     if (savedLang === 'hi') {
       setLanguageState('hi');
       document.documentElement.lang = 'hi';
     } else {
       setLanguageState('en');
       document.documentElement.lang = 'en';
-      // Clear any auto-translate cookies so browser does not translate on load
       if (typeof document !== 'undefined') {
         document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         document.cookie = 'googtrans=/en/en; path=/;';
@@ -109,24 +121,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Hydrate dynamic entity state for true multi-page persistence
     try {
-      const savedStudent = localStorage.getItem('karyasetu-student');
-      if (savedStudent) setStudent(JSON.parse(savedStudent));
+      const savedStudent = safeJsonParse<StudentProfile>(localStorage.getItem('karyasetu-student'));
+      if (savedStudent && typeof savedStudent === 'object' && Array.isArray(savedStudent.skills)) {
+        setStudent(savedStudent);
+      }
 
-      const savedOpps = localStorage.getItem('karyasetu-opportunities');
-      if (savedOpps) setOpportunities(JSON.parse(savedOpps));
+      const savedOpps = safeJsonParse<Opportunity[]>(localStorage.getItem('karyasetu-opportunities'));
+      if (Array.isArray(savedOpps)) setOpportunities(savedOpps);
 
-      const savedApps = localStorage.getItem('karyasetu-applications');
-      if (savedApps) setApplications(JSON.parse(savedApps));
+      const savedApps = safeJsonParse<ApplicationItem[]>(localStorage.getItem('karyasetu-applications'));
+      if (Array.isArray(savedApps)) setApplications(savedApps);
 
-      const savedNotifs = localStorage.getItem('karyasetu-notifications');
-      if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
+      const savedNotifs = safeJsonParse<AppNotification[]>(localStorage.getItem('karyasetu-notifications'));
+      if (Array.isArray(savedNotifs)) setNotifications(savedNotifs);
 
-      const savedUnv = localStorage.getItem('karyasetu-unverified');
-      if (savedUnv) setUnverifiedStudents(JSON.parse(savedUnv));
+      const savedUnv = safeJsonParse<UnverifiedStudent[]>(localStorage.getItem('karyasetu-unverified'));
+      if (Array.isArray(savedUnv)) setUnverifiedStudents(savedUnv);
 
-      const savedRole = localStorage.getItem('karyasetu-role') as UserRole;
+      const savedRole = localStorage.getItem('karyasetu-role') as UserRole | null;
       if (savedRole && ['student', 'industry', 'faculty', 'institution'].includes(savedRole)) {
         setRole(savedRole);
       }
@@ -135,48 +148,68 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (savedAuth !== null) setIsLoggedIn(savedAuth === 'true');
     } catch (e) {
       console.warn('Could not restore state from localStorage:', e);
+    } finally {
+      isHydratedRef.current = true;
     }
   }, []);
 
-  // Sync state changes to localStorage
+  // Persist domain changes only after initial hydration completes
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     try {
       localStorage.setItem('karyasetu-student', JSON.stringify(student));
-    } catch (e) {}
+    } catch {
+      // Ignore storage quota errors
+    }
   }, [student]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     try {
       localStorage.setItem('karyasetu-opportunities', JSON.stringify(opportunities));
-    } catch (e) {}
+    } catch {
+      // Ignore storage quota errors
+    }
   }, [opportunities]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     try {
       localStorage.setItem('karyasetu-applications', JSON.stringify(applications));
-    } catch (e) {}
+    } catch {
+      // Ignore storage quota errors
+    }
   }, [applications]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     try {
       localStorage.setItem('karyasetu-notifications', JSON.stringify(notifications));
-    } catch (e) {}
+    } catch {
+      // Ignore storage quota errors
+    }
   }, [notifications]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     try {
       localStorage.setItem('karyasetu-unverified', JSON.stringify(unverifiedStudents));
-    } catch (e) {}
+    } catch {
+      // Ignore storage quota errors
+    }
   }, [unverifiedStudents]);
 
   useEffect(() => {
+    if (!isHydratedRef.current) return;
     try {
       localStorage.setItem('karyasetu-role', role);
       localStorage.setItem('karyasetu-auth', String(isLoggedIn));
-    } catch (e) {}
+    } catch {
+      // Ignore storage quota errors
+    }
   }, [role, isLoggedIn]);
 
-  const setLanguage = (newLang: Language) => {
+  const setLanguage = useCallback((newLang: Language) => {
     setLanguageState(newLang);
     if (typeof window !== 'undefined') {
       localStorage.setItem('karyasetu-lang', newLang);
@@ -197,232 +230,262 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // If Google Translate element combo is available, trigger change event
       const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
       if (combo) {
         combo.value = newLang;
         combo.dispatchEvent(new Event('change'));
       }
     }
-  };
+  }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setTheme((prev) => {
       const next = prev === 'light' ? 'dark' : 'light';
       localStorage.setItem('karyasetu-theme', next);
-      if (next === 'dark') {
-        document.documentElement.classList.add('dark');
-        document.documentElement.classList.remove('light');
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.classList.add('light');
+      document.documentElement.classList.toggle('dark', next === 'dark');
+      document.documentElement.classList.toggle('light', next !== 'dark');
+      return next;
+    });
+  }, []);
+
+  const setWallpaperMode = useCallback((mode: WallpaperMode) => {
+    setWallpaperModeState(mode);
+    try {
+      localStorage.setItem('karyasetu-wallpaper', mode);
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  const toggleWallpaperMode = useCallback(() => {
+    setWallpaperModeState((prev) => {
+      const next = prev === 'live' ? 'plain' : 'live';
+      try {
+        localStorage.setItem('karyasetu-wallpaper', next);
+      } catch {
+        // Ignore storage errors
       }
       return next;
     });
-  };
+  }, []);
 
-  const toggleWallpaperMode = () => {
-    setWallpaperMode((prev) => {
-      const next = prev === 'live' ? 'plain' : 'live';
-      localStorage.setItem('karyasetu-wallpaper', next);
-      return next;
-    });
-  };
-
-  const login = (newRole: UserRole) => {
+  const login = useCallback((newRole: UserRole) => {
     setRole(newRole);
     setIsLoggedIn(true);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setIsLoggedIn(false);
-  };
+  }, []);
 
-  // Notification helpers
-  const addNotification = (notif: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => {
-    const newNotif: AppNotification = {
-      ...notif,
-      id: `notif-${Date.now()}`,
-      timestamp: 'Just now',
-      read: false,
-    };
-    setNotifications((prev) => [newNotif, ...prev]);
-  };
+  const addNotification = useCallback(
+    (notif: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => {
+      const newNotif: AppNotification = {
+        ...notif,
+        id: `notif-${Date.now()}`,
+        timestamp: 'Just now',
+        read: false,
+      };
+      setNotifications((prev) => [newNotif, ...prev]);
+    },
+    []
+  );
 
-  const markNotificationRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
+  const markNotificationRead = useCallback((id: string) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  }, []);
 
-  const markAllNotificationsRead = () => {
+  const markAllNotificationsRead = useCallback(() => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
+  }, []);
 
-  // Apply to opportunity (Opportunity Flow)
-  const applyToOpportunity = (opp: Opportunity): boolean => {
-    const existing = applications.find(
-      (a) => a.opportunityId === opp.id && a.studentName === student.name
-    );
-    if (existing) return false;
+  const applyToOpportunity = useCallback(
+    (opp: Opportunity): boolean => {
+      const existing = applications.find(
+        (a) => a.opportunityId === opp.id && a.studentName === student.name
+      );
+      if (existing) return false;
 
-    const newApp: ApplicationItem = {
-      id: `app-${Date.now()}`,
-      opportunityId: opp.id,
-      opportunityTitle: opp.title,
-      company: opp.company,
-      appliedDate: 'Today',
-      status: 'Applied',
-      matchScore: 88,
-      studentName: student.name,
-      studentCollege: student.college,
-    };
+      const newApp: ApplicationItem = {
+        id: `app-${Date.now()}`,
+        opportunityId: opp.id,
+        opportunityTitle: opp.title,
+        company: opp.company,
+        appliedDate: 'Today',
+        status: 'Applied',
+        matchScore: 88,
+        studentName: student.name,
+        studentCollege: student.college,
+      };
 
-    setApplications((prev) => [newApp, ...prev]);
-    setOpportunities((prev) =>
-      prev.map((o) => (o.id === opp.id ? { ...o, applicantsCount: o.applicantsCount + 1 } : o))
-    );
+      setApplications((prev) => [newApp, ...prev]);
+      setOpportunities((prev) =>
+        prev.map((o) => (o.id === opp.id ? { ...o, applicantsCount: o.applicantsCount + 1 } : o))
+      );
 
-    addNotification({
-      title: 'Application Submitted',
-      message: `Your application for "${opp.title}" at ${opp.company} has been dispatched.`,
-      type: 'opportunity',
-      link: '/student/internships',
-    });
-
-    return true;
-  };
-
-  // Update application status (Industry Selection Updates -> Student Application Tracking)
-  const updateApplicationStatus = (appId: string, status: ApplicationItem['status']) => {
-    const targetApp = applications.find((a) => a.id === appId);
-    setApplications((prev) =>
-      prev.map((a) => (a.id === appId ? { ...a, status } : a))
-    );
-
-    if (targetApp) {
       addNotification({
-        title: `Status Update: ${status}`,
-        message: `${targetApp.company} updated your application status for "${targetApp.opportunityTitle}" to ${status}.`,
-        type: 'selection',
+        title: 'Application Submitted',
+        message: `Your application for "${opp.title}" at ${opp.company} has been dispatched.`,
+        type: 'opportunity',
         link: '/student/internships',
       });
-    }
-  };
 
-  // Faculty endorsement (Faculty Actions -> Skill Profile Generation)
-  const endorseStudentSkill = (skillId: string, facultyName: string) => {
-    const skillObj = student.skills.find((s) => s.skillId === skillId);
-    const skillTitle = skillObj?.skillName || skillId;
+      return true;
+    },
+    [applications, student.name, student.college, addNotification]
+  );
 
-    setStudent((prev) => ({
-      ...prev,
-      skills: prev.skills.map((s) =>
-        s.skillId === skillId
-          ? { ...s, isVerified: true, endorsedBy: `${facultyName} (AIIA Faculty)` }
-          : s
-      ),
-      readinessScore: Math.min(100, prev.readinessScore + 3),
-    }));
+  const updateApplicationStatus = useCallback(
+    (appId: string, status: ApplicationItem['status']) => {
+      const targetApp = applications.find((a) => a.id === appId);
+      setApplications((prev) => prev.map((a) => (a.id === appId ? { ...a, status } : a)));
 
-    addNotification({
-      title: 'Faculty Skill Endorsement',
-      message: `${facultyName} has verified and endorsed your competency in "${skillTitle}".`,
-      type: 'endorsement',
-      link: '/student/portfolio',
-    });
-  };
+      if (targetApp) {
+        addNotification({
+          title: `Status Update: ${status}`,
+          message: `${targetApp.company} updated your application status for "${targetApp.opportunityTitle}" to ${status}.`,
+          type: 'selection',
+          link: '/student/internships',
+        });
+      }
+    },
+    [applications, addNotification]
+  );
 
-  // Update skill after assessment (User Journey -> Skill Profile Generation)
-  const updateSkillLevel = (skillId: string, levelGain: number) => {
+  const endorseStudentSkill = useCallback(
+    (skillId: string, facultyName: string) => {
+      const skillObj = student.skills.find((s) => s.skillId === skillId);
+      const skillTitle = skillObj?.skillName || skillId;
+
+      setStudent((prev) => ({
+        ...prev,
+        skills: prev.skills.map((s) =>
+          s.skillId === skillId
+            ? { ...s, isVerified: true, endorsedBy: `${facultyName} (AIIA Faculty)` }
+            : s
+        ),
+        readinessScore: Math.min(100, prev.readinessScore + 3),
+      }));
+
+      addNotification({
+        title: 'Faculty Skill Endorsement',
+        message: `${facultyName} has verified and endorsed your competency in "${skillTitle}".`,
+        type: 'endorsement',
+        link: '/student/portfolio',
+      });
+    },
+    [student.skills, addNotification]
+  );
+
+  const updateSkillLevel = useCallback((skillId: string, levelGain: number) => {
     setStudent((prev) => {
       const exists = prev.skills.find((s) => s.skillId === skillId);
-      let updatedSkills;
-      if (exists) {
-        updatedSkills = prev.skills.map((s) =>
-          s.skillId === skillId ? { ...s, level: Math.min(5, Math.max(s.level, levelGain)) } : s
-        );
-      } else {
-        updatedSkills = [
-          ...prev.skills,
-          { skillId, skillName: skillId.replace('-', ' '), level: levelGain },
-        ];
-      }
+      const updatedSkills = exists
+        ? prev.skills.map((s) =>
+            s.skillId === skillId ? { ...s, level: Math.min(5, Math.max(s.level, levelGain)) } : s
+          )
+        : [
+            ...prev.skills,
+            { skillId, skillName: skillId.replace(/-/g, ' '), level: levelGain },
+          ];
+
       return {
         ...prev,
         skills: updatedSkills,
         readinessScore: Math.min(96, prev.readinessScore + 2),
       };
     });
-  };
+  }, []);
 
-  // Post opportunity (Industry Actions -> Skill & Opportunity Matching)
-  const postNewOpportunity = (opp: Omit<Opportunity, 'id' | 'postedAt' | 'applicantsCount'>) => {
-    const created: Opportunity = {
-      ...opp,
-      id: `opp-${Date.now()}`,
-      postedAt: 'Just now',
-      applicantsCount: 0,
-    };
-    setOpportunities((prev) => [created, ...prev]);
+  const postNewOpportunity = useCallback(
+    (opp: Omit<Opportunity, 'id' | 'postedAt' | 'applicantsCount'>) => {
+      const created: Opportunity = {
+        ...opp,
+        id: `opp-${Date.now()}`,
+        postedAt: 'Just now',
+        applicantsCount: 0,
+      };
+      setOpportunities((prev) => [created, ...prev]);
 
-    addNotification({
-      title: 'New Matched Opportunity Live',
-      message: `"${opp.title}" posted by ${opp.company} is now matching student profiles.`,
-      type: 'opportunity',
-      link: '/student/internships',
-    });
-  };
+      addNotification({
+        title: 'New Matched Opportunity Live',
+        message: `"${opp.title}" posted by ${opp.company} is now matching student profiles.`,
+        type: 'opportunity',
+        link: '/student/internships',
+      });
+    },
+    [addNotification]
+  );
 
-  // Institution Actions: Verify Student Credentials
-  const verifyStudent = (studentId: string) => {
-    setUnverifiedStudents((prev) =>
-      prev.map((s) => (s.id === studentId ? { ...s, status: 'Verified' } : s))
-    );
+  const verifyStudent = useCallback(
+    (studentId: string) => {
+      setUnverifiedStudents((prev) =>
+        prev.map((s) => (s.id === studentId ? { ...s, status: 'Verified' } : s))
+      );
 
-    // If verifying current student
-    setStudent((prev) => ({
-      ...prev,
-      isInstitutionVerified: true,
-      institutionVerificationDate: '12 Sep 2026',
-    }));
+      setStudent((prev) => ({
+        ...prev,
+        isInstitutionVerified: true,
+        institutionVerificationDate: '12 Sep 2026',
+      }));
 
-    addNotification({
-      title: 'Institution Verification Approved',
-      message: 'AIIA Academic Registrar has verified student credentials and pushed verified learner data.',
-      type: 'verification',
-      link: '/institution/verify',
-    });
-  };
+      addNotification({
+        title: 'Institution Verification Approved',
+        message: 'AIIA Academic Registrar has verified student credentials and pushed verified learner data.',
+        type: 'verification',
+        link: '/institution/verify',
+      });
+    },
+    [addNotification]
+  );
 
-  // Institution Actions: Flag Student
-  const flagStudent = (studentId: string) => {
+  const flagStudent = useCallback((studentId: string) => {
     setUnverifiedStudents((prev) =>
       prev.map((s) => (s.id === studentId ? { ...s, status: 'Flagged' } : s))
     );
-  };
+  }, []);
 
-  // Academic Bank of Credits (ABC ID / APAAR) Integration
-  const linkAbcId = (newAbcId: string) => {
-    const formatted = newAbcId.trim();
-    const timestamp = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' IST';
-    setStudent((prev) => ({
-      ...prev,
-      abcId: formatted,
-      isAbcLinked: true,
-      abcLastSynced: timestamp,
-    }));
+  const linkAbcId = useCallback(
+    (newAbcId: string) => {
+      const formatted = newAbcId.trim();
+      const timestamp =
+        new Date().toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }) +
+        ', ' +
+        new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
+        ' IST';
 
-    addNotification({
-      title: 'Academic Bank of Credits (ABC) Linked',
-      message: `ABC ID ${formatted} successfully mapped to DigiLocker and AIIA academic records.`,
-      type: 'verification',
-      link: '/student/portfolio',
-    });
-  };
+      setStudent((prev) => ({
+        ...prev,
+        abcId: formatted,
+        isAbcLinked: true,
+        abcLastSynced: timestamp,
+      }));
 
-  const syncAbcCredits = () => {
-    const timestamp = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' IST';
+      addNotification({
+        title: 'Academic Bank of Credits (ABC) Linked',
+        message: `ABC ID ${formatted} successfully mapped to DigiLocker and AIIA academic records.`,
+        type: 'verification',
+        link: '/student/portfolio',
+      });
+    },
+    [addNotification]
+  );
+
+  const syncAbcCredits = useCallback(() => {
+    const timestamp =
+      new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }) +
+      ', ' +
+      new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
+      ' IST';
+
     setStudent((prev) => ({
       ...prev,
       isAbcLinked: true,
@@ -435,10 +498,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       type: 'verification',
       link: '/student/dashboard',
     });
-  };
+  }, [student.abcCredits, addNotification]);
 
-  // Reset Demo Data
-  const resetDemoData = () => {
+  const resetDemoData = useCallback(() => {
     try {
       localStorage.removeItem('karyasetu-student');
       localStorage.removeItem('karyasetu-opportunities');
@@ -459,49 +521,80 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         message: 'System data re-synchronized to pristine national cohort benchmark.',
         type: 'verification',
       });
-    } catch (e) {}
-  };
+    } catch {
+      // Ignore storage errors
+    }
+  }, [addNotification]);
 
-  return (
-    <AppContext.Provider
-      value={{
-        role,
-        setRole,
-        isLoggedIn,
-        login,
-        logout,
-        theme,
-        toggleTheme,
-        wallpaperMode,
-        setWallpaperMode,
-        toggleWallpaperMode,
-        language,
-        setLanguage,
-        student,
-        setStudent,
-        opportunities,
-        setOpportunities,
-        applications,
-        applyToOpportunity,
-        updateApplicationStatus,
-        endorseStudentSkill,
-        updateSkillLevel,
-        postNewOpportunity,
-        notifications,
-        markNotificationRead,
-        markAllNotificationsRead,
-        addNotification,
-        unverifiedStudents,
-        verifyStudent,
-        flagStudent,
-        linkAbcId,
-        syncAbcCredits,
-        resetDemoData,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+  const contextValue = useMemo<AppContextType>(
+    () => ({
+      role,
+      setRole,
+      isLoggedIn,
+      login,
+      logout,
+      theme,
+      toggleTheme,
+      wallpaperMode,
+      setWallpaperMode,
+      toggleWallpaperMode,
+      language,
+      setLanguage,
+      student,
+      setStudent,
+      opportunities,
+      setOpportunities,
+      applications,
+      applyToOpportunity,
+      updateApplicationStatus,
+      endorseStudentSkill,
+      updateSkillLevel,
+      postNewOpportunity,
+      notifications,
+      markNotificationRead,
+      markAllNotificationsRead,
+      addNotification,
+      unverifiedStudents,
+      verifyStudent,
+      flagStudent,
+      linkAbcId,
+      syncAbcCredits,
+      resetDemoData,
+    }),
+    [
+      role,
+      isLoggedIn,
+      login,
+      logout,
+      theme,
+      toggleTheme,
+      wallpaperMode,
+      setWallpaperMode,
+      toggleWallpaperMode,
+      language,
+      setLanguage,
+      student,
+      opportunities,
+      applications,
+      applyToOpportunity,
+      updateApplicationStatus,
+      endorseStudentSkill,
+      updateSkillLevel,
+      postNewOpportunity,
+      notifications,
+      markNotificationRead,
+      markAllNotificationsRead,
+      addNotification,
+      unverifiedStudents,
+      verifyStudent,
+      flagStudent,
+      linkAbcId,
+      syncAbcCredits,
+      resetDemoData,
+    ]
   );
+
+  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {

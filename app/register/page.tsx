@@ -22,6 +22,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function RegisterForm() {
   const router = useRouter();
@@ -170,9 +171,9 @@ function RegisterForm() {
       {/* Emblem Header */}
       <div className="text-center mb-6">
         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-400/60 mx-auto mb-3 shadow-sm bg-navy-900 flex items-center justify-center">
-          <img src="/logo.png" alt="KaryaSetu Logo" className="w-full h-full object-cover scale-110" />
+          <Image src="/logo.png" alt="KaryaSetu Logo" width={64} height={62} priority className="w-full h-full object-cover scale-110" />
         </div>
-        <h2 className="text-2xl font-extrabold text-navy-900 dark:text-white">Sign In &amp; Register</h2>
+        <h1 className="text-2xl font-extrabold text-navy-900 dark:text-white">Sign In &amp; Register</h1>
         <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 font-medium">
           Provide your official details to establish your authenticated portal profile
         </p>
@@ -245,12 +246,13 @@ function RegisterForm() {
       <form onSubmit={handleRegister} className="space-y-3.5 text-xs">
         {/* Full Name */}
         <div>
-          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+          <label htmlFor="reg-fullname" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             Full Legal Name <span className="text-rose-500">*</span>
           </label>
           <div className="relative">
-            <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
             <input
+              id="reg-fullname"
               type="text"
               value={fullName}
               onChange={(e) => {
@@ -266,12 +268,13 @@ function RegisterForm() {
 
         {/* Enrollment / Institutional ID */}
         <div>
-          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+          <label htmlFor="reg-enrollment" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             {currentMeta.idLabel} <span className="text-rose-500">*</span>
           </label>
           <div className="relative">
-            <BadgeCheck className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <BadgeCheck className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
             <input
+              id="reg-enrollment"
               type="text"
               value={enrollmentId}
               onChange={(e) => {
@@ -289,7 +292,7 @@ function RegisterForm() {
         {roleType === 'student' && (
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold">
+              <label htmlFor="reg-abc" className="block text-slate-700 dark:text-slate-300 font-semibold">
                 Academic Bank of Credits (ABC ID / APAAR)
               </label>
               <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
@@ -297,8 +300,9 @@ function RegisterForm() {
               </span>
             </div>
             <div className="relative">
-              <CreditCard className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <CreditCard className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
               <input
+                id="reg-abc"
                 type="text"
                 value={abcId}
                 onChange={(e) => setAbcId(e.target.value)}
@@ -314,12 +318,13 @@ function RegisterForm() {
 
         {/* Email */}
         <div>
-          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+          <label htmlFor="reg-email" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             Official / Institutional Email <span className="text-rose-500">*</span>
           </label>
           <div className="relative">
-            <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
             <input
+              id="reg-email"
               type="email"
               value={email}
               onChange={(e) => {
@@ -335,12 +340,13 @@ function RegisterForm() {
 
         {/* Organization */}
         <div>
-          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+          <label htmlFor="reg-org" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             {currentMeta.orgLabel} <span className="text-rose-500">*</span>
           </label>
           <div className="relative">
-            <School className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <School className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
             <input
+              id="reg-org"
               type="text"
               value={organization}
               onChange={(e) => {
@@ -357,12 +363,13 @@ function RegisterForm() {
         {/* Password & Confirm Password */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+            <label htmlFor="reg-password" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
               Create Password <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
               <input
+                id="reg-password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => {
@@ -376,20 +383,22 @@ function RegisterForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide Password' : 'Show Password'}
                 className="absolute right-2.5 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
               >
-                {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                {showPassword ? <EyeOff className="w-3.5 h-3.5" aria-hidden="true" /> : <Eye className="w-3.5 h-3.5" aria-hidden="true" />}
               </button>
             </div>
           </div>
 
           <div>
-            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+            <label htmlFor="reg-confirm" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
               Confirm Password <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
               <input
+                id="reg-confirm"
                 type={showPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => {

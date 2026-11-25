@@ -4,16 +4,12 @@ import React from 'react';
 import Link from 'next/link';
 import { useApp } from '@/lib/store';
 import {
-  Building2,
   Users,
   Briefcase,
   PlusCircle,
   TrendingUp,
   ArrowRight,
   CheckCircle2,
-  Sparkles,
-  MapPin,
-  Calendar,
 } from 'lucide-react';
 
 export default function IndustryDashboard() {

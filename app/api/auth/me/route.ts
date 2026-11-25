@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'karyasetu-sovereign-secret-2026';
+import { getJwtSecret } from '@/lib/security';
 
 /**
  * GET /api/auth/me
- * Verifies JWT from Authorization header or cookie, returning the active session.
+ * Verifies JWT from cookie or Authorization Bearer header, returning the active session.
  */
 export async function GET(req: NextRequest) {
   try {
@@ -14,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     let token = cookieToken;
     if (!token && authHeader?.startsWith('Bearer ')) {
-      token = authHeader.substring(7);
+      token = authHeader.substring(7).trim();
     }
 
     if (!token) {
@@ -24,13 +23,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] });
 
     return NextResponse.json({
       success: true,
       user: decoded,
     });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Invalid or expired session token' },
       { status: 401 }

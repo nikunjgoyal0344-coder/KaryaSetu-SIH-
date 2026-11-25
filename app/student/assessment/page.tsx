@@ -1,25 +1,26 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useApp } from '@/lib/store';
 import { AYUSH_SKILLS_TAXONOMY } from '@/lib/taxonomy';
-import SkillRadarChart from '@/components/SkillRadarChart';
 import Link from 'next/link';
+
+const SkillRadarChart = dynamic(() => import('@/components/SkillRadarChart'), {
+  ssr: false,
+  loading: () => <div className="w-full h-[260px] sm:h-[320px] rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />,
+});
 import {
   Award,
   CheckCircle2,
-  HelpCircle,
   TrendingUp,
   ArrowRight,
-  RotateCcw,
   Sparkles,
   BookOpen,
   X,
   ChevronRight,
   ChevronLeft,
-  AlertCircle,
   Layers,
-  GraduationCap,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -51,7 +52,7 @@ interface AssessmentResult {
   levelGain: number;
   gapAnalysis: GapItem[];
   updatedReadinessScore: number;
-  notification: any;
+  notification: string | null;
 }
 
 export default function AssessmentPage() {

@@ -73,6 +73,7 @@ export default function MobileBottomNav() {
             <Link
               key={link.href}
               href={link.href}
+              aria-current={isActive ? 'page' : undefined}
               className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl min-h-[50px] transition-all relative ${
                 isActive
                   ? 'text-saffron-dark dark:text-saffron font-bold'
@@ -89,7 +90,7 @@ export default function MobileBottomNav() {
                     : ''
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-5 h-5" aria-hidden="true" />
               </div>
               <span className="text-[10px] tracking-tight mt-0.5 font-medium leading-none">
                 {link.label}

@@ -1,53 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { db } from '@/lib/backend/db';
-
-const ALLOWED_ROLES = ['student', 'industry', 'faculty', 'institution'] as const;
-type StakeholderRole = (typeof ALLOWED_ROLES)[number];
-
-function getJwtSecret(): string {
-  if (process.env.JWT_SECRET) {
-    return process.env.JWT_SECRET;
-  }
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('CRITICAL SECURITY CONFIGURATION: JWT_SECRET must be defined in production environment.');
-  }
-  return 'karyasetu-sovereign-dev-secret-2026';
-}
+import {
+  ALLOWED_ROLES,
+  getJwtSecret,
+  isAllowedEnum,
+  isValidEmail,
+  sanitizeString,
+} from '@/lib/security';
+import { badRequest, enforceRateLimit, parseJsonBody, serverError } from '@/lib/apiHelpers';
 
 /**
  * POST /api/auth/login
  * Authenticates user across 4 stakeholder roles and returns a signed JWT token.
  */
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'auth:login', 30, 60_000);
+  if (limited) return limited;
+
   try {
-    const body = await req.json().catch(() => ({}));
+    const body = (await parseJsonBody<{ role?: unknown; email?: unknown }>(req)) ?? {};
     const rawRole = typeof body.role === 'string' ? body.role.trim() : 'student';
 
-    if (!ALLOWED_ROLES.includes(rawRole as StakeholderRole)) {
-      return NextResponse.json(
-        { success: false, error: `Invalid role specified. Must be one of: ${ALLOWED_ROLES.join(', ')}` },
-        { status: 400 }
-      );
+    if (!isAllowedEnum(rawRole, ALLOWED_ROLES)) {
+      return badRequest(`Invalid role specified. Must be one of: ${ALLOWED_ROLES.join(', ')}`);
     }
-    const role = rawRole as StakeholderRole;
 
-    let email = '';
+    let resolvedEmailInput = '';
     if (typeof body.email === 'string' && body.email.trim().length > 0) {
-      email = body.email.trim().slice(0, 254);
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return NextResponse.json(
-          { success: false, error: 'Invalid email address format' },
-          { status: 400 }
-        );
+      resolvedEmailInput = sanitizeString(body.email, 254);
+      if (!isValidEmail(resolvedEmailInput)) {
+        return badRequest('Invalid email address format');
       }
     }
 
-    const user = db.getUser(role);
-    const resolvedEmail = email || user.email;
+    const user = db.getUser(rawRole);
+    const resolvedEmail = resolvedEmailInput || user.email;
     const secret = getJwtSecret();
 
-    // Sign stateless JWT token
     const token = jwt.sign(
       {
         sub: user.id,
@@ -57,7 +47,7 @@ export async function POST(req: NextRequest) {
         affiliation: user.affiliation,
       },
       secret,
-      { expiresIn: '7d' }
+      { expiresIn: '7d', algorithm: 'HS256' }
     );
 
     const response = NextResponse.json({
@@ -70,7 +60,6 @@ export async function POST(req: NextRequest) {
       expiresIn: '7d',
     });
 
-    // Set secure session cookie
     response.cookies.set('karyasetu_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -80,10 +69,7 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Authentication failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('auth/login', error, 'Authentication failed');
   }
 }

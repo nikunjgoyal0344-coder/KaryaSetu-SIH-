@@ -11,23 +11,8 @@ import type { FeatureVector } from '../lib/backend/aiEngine.ts';
 import type { StudentProfile } from '../lib/seedData.ts';
 import type { Opportunity } from '../lib/matchingEngine.ts';
 
-test('computeCosineSimilarity calculates mathematical cosine angle correctly', () => {
-  // Orthogonal vectors: dot product is 0 -> similarity 0
-  const vecA: FeatureVector = { dimensions: [1, 0, 0], norm: 1 };
-  const vecB: FeatureVector = { dimensions: [0, 1, 0], norm: 1 };
-  assert.strictEqual(computeCosineSimilarity(vecA, vecB), 0);
-
-  // Parallel identical vectors: similarity 1
-  const vecC: FeatureVector = { dimensions: [2, 2, 1], norm: 3 };
-  assert.strictEqual(Math.round(computeCosineSimilarity(vecC, vecC) * 100) / 100, 1);
-
-  // Zero vector handling: returns 0 without crashing with NaN
-  const zeroVec: FeatureVector = { dimensions: [0, 0, 0], norm: 0 };
-  assert.strictEqual(computeCosineSimilarity(vecA, zeroVec), 0);
-});
-
-test('vectorizeStudent and vectorizeOpportunity produce correct norms and dimensions', () => {
-  const mockStudent: StudentProfile = {
+function makeStudent(overrides: Partial<StudentProfile> = {}): StudentProfile {
+  return {
     id: 'test-stu',
     name: 'Test Scholar',
     email: 'scholar@test.in',
@@ -49,13 +34,12 @@ test('vectorizeStudent and vectorizeOpportunity produce correct norms and dimens
     bio: 'Aspiring clinical researcher in Panchakarma therapy.',
     completedCertificates: [],
     projects: [],
+    ...overrides,
   };
+}
 
-  const studentVec = vectorizeStudent(mockStudent);
-  assert.ok(studentVec.norm > 0, 'Norm should be positive');
-  assert.ok(studentVec.dimensions.length === 15, 'Should match 15 AYUSH vocabulary dimensions');
-
-  const mockOpp: Opportunity = {
+function makeOpp(overrides: Partial<Opportunity> = {}): Opportunity {
+  return {
     id: 'opp-1',
     title: 'Panchakarma Intern',
     company: 'Ayush Clinical Hospital',
@@ -72,18 +56,62 @@ test('vectorizeStudent and vectorizeOpportunity produce correct norms and dimens
     description: 'Practical clinical training in Panchakarma therapy.',
     postedAt: '2026-01-01',
     applicantsCount: 10,
+    ...overrides,
   };
+}
 
-  const oppVec = vectorizeOpportunity(mockOpp);
-  assert.ok(oppVec.norm > 0, 'Opportunity vector norm should be positive');
+test('computeCosineSimilarity handles orthogonal, parallel, and zero vectors', () => {
+  const vecA: FeatureVector = { dimensions: [1, 0, 0], norm: 1 };
+  const vecB: FeatureVector = { dimensions: [0, 1, 0], norm: 1 };
+  assert.strictEqual(computeCosineSimilarity(vecA, vecB), 0);
 
-  const sim = computeCosineSimilarity(studentVec, oppVec);
-  assert.ok(sim > 0.5, `Expected high similarity for matching skill, got ${sim}`);
+  const vecC: FeatureVector = { dimensions: [2, 2, 1], norm: 3 };
+  assert.strictEqual(Math.round(computeCosineSimilarity(vecC, vecC) * 100) / 100, 1);
 
-  const contentSim = computeContentSimilarity(mockStudent, mockOpp);
-  assert.ok(contentSim > 0, `Expected positive content overlap, got ${contentSim}`);
+  const zeroVec: FeatureVector = { dimensions: [0, 0, 0], norm: 0 };
+  assert.strictEqual(computeCosineSimilarity(vecA, zeroVec), 0);
+});
 
-  const ranked = rankOpportunitiesWithAI(mockStudent, [mockOpp]);
-  assert.strictEqual(ranked.length, 1);
-  assert.ok(ranked[0].compositeMatchScore > 50, 'Composite match score should be high');
+test('vectorizeStudent applies verified credibility boost capped at 5', () => {
+  const unverified = vectorizeStudent(
+    makeStudent({ skills: [{ skillId: 'panchakarma-therapy', skillName: 'Panchakarma', level: 4, isVerified: false }] })
+  );
+  const verified = vectorizeStudent(
+    makeStudent({ skills: [{ skillId: 'panchakarma-therapy', skillName: 'Panchakarma', level: 4, isVerified: true }] })
+  );
+  const capped = vectorizeStudent(
+    makeStudent({ skills: [{ skillId: 'panchakarma-therapy', skillName: 'Panchakarma', level: 5, isVerified: true }] })
+  );
+
+  assert.strictEqual(unverified.dimensions[0], 4);
+  assert.ok(verified.dimensions[0] > 4 && verified.dimensions[0] <= 4.41);
+  assert.strictEqual(capped.dimensions[0], 5);
+});
+
+test('rankOpportunitiesWithAI ranks strong matches higher and builds remediation roadmap', () => {
+  const student = makeStudent();
+  const strongOpp = makeOpp({ id: 'opp-strong' });
+  const weakOpp = makeOpp({
+    id: 'opp-weak',
+    title: 'GMP Manufacturing Intern',
+    mode: 'Remote',
+    targetDomain: ['Manufacturing'],
+    description: 'GMP HPLC manufacturing protocols.',
+    requiredSkills: [
+      { skillId: 'rasashastra-qa', skillName: 'Rasashastra QA', requiredLevel: 5, importanceWeight: 5 },
+    ],
+  });
+
+  const ranked = rankOpportunitiesWithAI(student, [weakOpp, strongOpp]);
+  assert.strictEqual(ranked.length, 2);
+  assert.strictEqual(ranked[0].opportunity.id, 'opp-strong');
+  assert.ok(ranked[0].compositeMatchScore > ranked[1].compositeMatchScore);
+  assert.strictEqual(ranked[1].criticalGaps.length, 1);
+  assert.strictEqual(ranked[1].recommendationRoadmap[0].estimatedWeeks, 10);
+
+  const noOverlapContent = computeContentSimilarity(
+    makeStudent({ bio: 'unrelated', interests: [], skills: [] }),
+    weakOpp
+  );
+  assert.strictEqual(noOverlapContent, 0);
 });

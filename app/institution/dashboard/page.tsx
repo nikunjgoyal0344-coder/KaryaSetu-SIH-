@@ -8,14 +8,11 @@ import {
   ShieldCheck, 
   BarChart3, 
   Users, 
-  Award, 
-  Briefcase, 
   Building2, 
   CheckCircle2, 
   ArrowRight,
   TrendingUp,
   FileCheck2,
-  AlertCircle
 } from 'lucide-react';
 
 export default function InstitutionDashboard() {

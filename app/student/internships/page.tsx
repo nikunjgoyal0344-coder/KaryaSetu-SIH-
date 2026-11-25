@@ -4,19 +4,23 @@ import React, { useState } from 'react';
 import { useApp } from '@/lib/store';
 import { computeOpportunityMatch, Opportunity } from '@/lib/matchingEngine';
 import WhyMatchModal from '@/components/WhyMatchModal';
+import ScrollReveal from '@/components/ScrollReveal';
+import { clampStaggerDelay } from '@/lib/scrollUtils';
 import {
-  Briefcase,
   Search,
-  SlidersHorizontal,
   MapPin,
-  Calendar,
   IndianRupee,
   Sparkles,
-  CheckCircle2,
   Building,
   Check,
   ArrowUpDown,
 } from 'lucide-react';
+
+interface RankedOpportunity {
+  opp: Opportunity;
+  match: ReturnType<typeof computeOpportunityMatch>;
+  isApplied: boolean;
+}
 
 export default function InternshipsPage() {
   const { student, opportunities, applications, applyToOpportunity } = useApp();
@@ -24,7 +28,7 @@ export default function InternshipsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedMode, setSelectedMode] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'match' | 'stipend' | 'applicants'>('match');
-  const [activeModalOpp, setActiveModalOpp] = useState<any>(null);
+  const [activeModalOpp, setActiveModalOpp] = useState<RankedOpportunity | null>(null);
 
   // Filter opportunities
   const filteredOpportunities = opportunities.filter((opp) => {
@@ -85,6 +89,7 @@ export default function InternshipsPage() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
+            aria-label="Search opportunities by role, company, or skill"
             placeholder="Search by role title, company, or required skill (e.g. Panchakarma, Herbology)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -94,6 +99,7 @@ export default function InternshipsPage() {
 
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto">
           <select
+            aria-label="Filter by opportunity category"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="flex-1 sm:flex-none py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
@@ -105,6 +111,7 @@ export default function InternshipsPage() {
           </select>
 
           <select
+            aria-label="Filter by work mode"
             value={selectedMode}
             onChange={(e) => setSelectedMode(e.target.value)}
             className="flex-1 sm:flex-none py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
@@ -116,10 +123,11 @@ export default function InternshipsPage() {
           </select>
 
           <div className="flex items-center gap-1.5 w-full sm:w-auto bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700">
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" aria-hidden="true" />
             <select
+              aria-label="Sort opportunities"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as 'match' | 'stipend' | 'applicants')}
               className="py-1 px-1.5 bg-transparent text-slate-700 dark:text-slate-200 font-semibold focus:outline-none text-xs w-full sm:w-auto cursor-pointer"
             >
               <option value="match" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">Sort: Best Match</option>
@@ -137,10 +145,14 @@ export default function InternshipsPage() {
             No matching opportunities found. Try adjusting your search query or filters.
           </div>
         ) : (
-          rankedOpportunities.map(({ opp, match, isApplied }) => (
-            <div
+          rankedOpportunities.map(({ opp, match, isApplied }, idx) => (
+            <ScrollReveal
               key={opp.id}
-              className="bg-white dark:bg-slate-900/90 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all space-y-4"
+              variant="fade-up"
+              delayMs={clampStaggerDelay(idx, 65, 325)}
+            >
+            <div
+              className="bg-white dark:bg-slate-900/90 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5 transition-all space-y-4"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="space-y-1">
@@ -239,6 +251,7 @@ export default function InternshipsPage() {
                 </button>
               </div>
             </div>
+            </ScrollReveal>
           ))
         )}
       </div>

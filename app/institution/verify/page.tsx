@@ -8,12 +8,7 @@ import {
   CheckCircle2, 
   AlertTriangle, 
   Search, 
-  Filter, 
   ArrowLeft,
-  GraduationCap,
-  ExternalLink,
-  Info,
-  BadgeAlert,
   Sparkles
 } from 'lucide-react';
 
@@ -105,9 +100,10 @@ export default function VerifyStudentsPage() {
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" aria-hidden="true" />
           <input
             type="text"
+            aria-label="Search students by name, roll number, or degree"
             placeholder="Search by student name, roll number, or degree..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -115,12 +111,13 @@ export default function VerifyStudentsPage() {
           />
         </div>
 
-        <div className="flex gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+        <div className="flex gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700" role="group" aria-label="Filter verification status">
           {(['All', 'Pending', 'Verified', 'Flagged'] as const).map((f) => (
             <button
               key={f}
               type="button"
               onClick={() => setFilter(f)}
+              aria-pressed={filter === f}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 filter === f
                   ? 'bg-saffron text-white shadow-xs'

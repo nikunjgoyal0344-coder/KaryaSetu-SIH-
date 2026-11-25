@@ -1,18 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/lib/store';
 import {
-  ShieldCheck,
   CheckCircle2,
   X,
   Copy,
   RefreshCw,
   ExternalLink,
-  Award,
   Layers,
   Sparkles,
-  BookOpen,
   Check,
   Building,
   CreditCard,
@@ -30,6 +27,15 @@ export default function AbcIdModal({ isOpen, onClose }: AbcIdModalProps) {
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [customAbcId, setCustomAbcId] = useState(student.abcId || '8472-1920-3841');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -66,7 +72,15 @@ export default function AbcIdModal({ isOpen, onClose }: AbcIdModalProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="abc-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
+    >
       <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transform transition-all max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-800 text-white p-5 sm:p-6 relative shrink-0 border-b border-navy-700/60">
@@ -76,15 +90,15 @@ export default function AbcIdModal({ isOpen, onClose }: AbcIdModalProps) {
             aria-label="Close modal"
             className="absolute top-4 right-4 text-slate-300 hover:text-white bg-navy-800 p-2 rounded-full transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center border border-navy-700"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
 
           <div className="flex items-center gap-2 mb-1 text-amber-400 text-xs font-semibold uppercase tracking-wider">
-            <CreditCard className="w-4 h-4 text-amber-400" />
+            <CreditCard className="w-4 h-4 text-amber-400" aria-hidden="true" />
             <span>Academic Bank of Credits • DigiLocker / APAAR</span>
           </div>
 
-          <h3 className="text-xl sm:text-2xl font-black text-white">
+          <h3 id="abc-modal-title" className="text-xl sm:text-2xl font-black text-white">
             National ABC ID &amp; Credit Ledger
           </h3>
           <p className="text-slate-200 text-xs sm:text-sm mt-0.5 max-w-lg">

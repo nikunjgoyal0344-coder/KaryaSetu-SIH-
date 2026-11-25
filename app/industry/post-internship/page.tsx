@@ -3,12 +3,10 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/lib/store';
+import type { Opportunity } from '@/lib/matchingEngine';
 import { AYUSH_SKILLS_TAXONOMY } from '@/lib/taxonomy';
 import {
-  Briefcase,
   PlusCircle,
-  Sliders,
-  CheckCircle2,
   Trash2,
   ArrowRight,
   Sparkles,
@@ -19,13 +17,13 @@ export default function PostInternshipPage() {
   const { postNewOpportunity } = useApp();
 
   const [title, setTitle] = useState('');
-  const [company, setCompany] = useState('Dabur Research Foundation (DRF)');
+  const company = 'Dabur Research Foundation (DRF)';
   const [category, setCategory] = useState<'Internship' | 'Entry-Level Job' | 'Live Project' | 'Faculty FDP'>('Internship');
   const [location, setLocation] = useState('Ghaziabad / Delhi NCR');
   const [mode, setMode] = useState<'On-site' | 'Remote' | 'Hybrid'>('Hybrid');
   const [duration, setDuration] = useState('3 Months');
   const [stipend, setStipend] = useState('₹20,000 / month');
-  const [minEligibility, setMinEligibility] = useState('Final Year BAMS or Internee');
+  const minEligibility = 'Final Year BAMS or Internee';
   const [description, setDescription] = useState('');
 
   // Selected skills with requirement levels and weights
@@ -106,8 +104,9 @@ export default function PostInternshipPage() {
           </h2>
 
           <div>
-            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Opportunity Title</label>
+            <label htmlFor="opp-title" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Opportunity Title</label>
             <input
+              id="opp-title"
               type="text"
               placeholder="e.g. Clinical Panchakarma Resident Intern / Quality Analyst"
               value={title}
@@ -119,10 +118,11 @@ export default function PostInternshipPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Opportunity Category</label>
+              <label htmlFor="opp-category" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Opportunity Category</label>
               <select
+                id="opp-category"
                 value={category}
-                onChange={(e) => setCategory(e.target.value as any)}
+                onChange={(e) => setCategory(e.target.value as Opportunity['category'])}
                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-saffron bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               >
                 <option value="Internship">Internship</option>
@@ -133,10 +133,11 @@ export default function PostInternshipPage() {
             </div>
 
             <div>
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Work Mode</label>
+              <label htmlFor="opp-mode" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Work Mode</label>
               <select
+                id="opp-mode"
                 value={mode}
-                onChange={(e) => setMode(e.target.value as any)}
+                onChange={(e) => setMode(e.target.value as Opportunity['mode'])}
                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-saffron bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               >
                 <option value="On-site">On-site</option>
@@ -148,8 +149,9 @@ export default function PostInternshipPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Location</label>
+              <label htmlFor="opp-location" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Location</label>
               <input
+                id="opp-location"
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
@@ -159,8 +161,9 @@ export default function PostInternshipPage() {
             </div>
 
             <div>
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Duration</label>
+              <label htmlFor="opp-duration" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Duration</label>
               <input
+                id="opp-duration"
                 type="text"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
@@ -170,8 +173,9 @@ export default function PostInternshipPage() {
             </div>
 
             <div>
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Stipend / CTC</label>
+              <label htmlFor="opp-stipend" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Stipend / CTC</label>
               <input
+                id="opp-stipend"
                 type="text"
                 value={stipend}
                 onChange={(e) => setStipend(e.target.value)}
@@ -182,8 +186,9 @@ export default function PostInternshipPage() {
           </div>
 
           <div>
-            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Job Description & Responsibilities</label>
+            <label htmlFor="opp-description" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Job Description & Responsibilities</label>
             <textarea
+              id="opp-description"
               rows={3}
               placeholder="Describe the clinical or industrial tasks, learning outcomes, and mentorship..."
               value={description}
@@ -209,6 +214,7 @@ export default function PostInternshipPage() {
           {/* Add skill row */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700">
             <select
+              aria-label="Select required skill to add"
               value={newSkillId}
               onChange={(e) => setNewSkillId(e.target.value)}
               className="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs focus:ring-2 focus:ring-saffron focus:outline-none"
@@ -245,6 +251,7 @@ export default function PostInternshipPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-slate-600 dark:text-slate-400 text-[11px]">Target Lvl:</span>
                     <select
+                      aria-label={`Target proficiency level for ${s.skillName}`}
                       value={s.requiredLevel}
                       onChange={(e) => {
                         const val = parseInt(e.target.value);
@@ -265,6 +272,7 @@ export default function PostInternshipPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-slate-600 dark:text-slate-400 text-[11px]">Weight:</span>
                     <select
+                      aria-label={`Importance weight for ${s.skillName}`}
                       value={s.importanceWeight}
                       onChange={(e) => {
                         const val = parseInt(e.target.value);

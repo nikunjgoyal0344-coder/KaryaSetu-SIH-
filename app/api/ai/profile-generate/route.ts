@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
 import { AYUSH_SKILLS_TAXONOMY, COMPETENCY_FRAMEWORK } from '@/lib/taxonomy';
+import { createAttestationDigest } from '@/lib/security';
+import { serverError } from '@/lib/apiHelpers';
+
+export const dynamic = 'force-dynamic';
 
 export interface Badge {
   id: string;
@@ -43,7 +47,6 @@ export async function GET() {
   try {
     const student = db.getStudent();
     const verifiedSkills = student.skills.filter((s) => s.isVerified);
-    const totalSkills = student.skills.length;
 
     // 1. Calculate Weighted Competency Score (0 - 100)
     let weightedSum = 0;
@@ -155,8 +158,9 @@ export async function GET() {
     // 6. Portfolio Summary (AI-generated)
     const portfolioSummary = `${student.name} is a high-performing ${student.degree} candidate at ${student.college} with an overall readiness index of ${student.readinessScore}%. Demonstrates expert proficiency in Panchakarma therapies, constitutional Prakriti analysis, and holistic patient counseling. Academic credits (${student.abcCredits || 148} credits) are securely mapped through the Academic Bank of Credits (APAAR), satisfying National Health Systems Resource Centre (NHSRC) and Healthcare Sector Skill Council (HSSC) qualification pack guidelines.`;
 
-    // 7. Mock Cryptographic Signature & QR URL
-    const digitalSignature = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+    // 7. Cryptographic HMAC Signature & QR URL
+    const signaturePayload = `${student.id}:${student.name}:${competencyScore}:${verifiedSkills.length}:${student.abcCredits || 148}`;
+    const digitalSignature = `0x${createAttestationDigest(signaturePayload)}`;
     const qrCodeUrl = `https://karyasetu.gov.in/verify-credential?scholar=${encodeURIComponent(student.name)}&score=${competencyScore}&sig=${digitalSignature.slice(0, 16)}`;
 
     // 8. HSSC Alignment Packs
@@ -191,10 +195,7 @@ export async function GET() {
       success: true,
       profile,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Profile generation failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('ai/profile-generate', error, 'Profile generation failed');
   }
 }

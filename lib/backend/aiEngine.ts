@@ -1,4 +1,4 @@
-import type { Opportunity, StudentSkill, SkillGapItem } from '../matchingEngine';
+import type { Opportunity, SkillGapItem } from '../matchingEngine';
 import type { StudentProfile } from '../seedData';
 
 /**
@@ -27,7 +27,6 @@ export const SKILL_FEATURE_VOCABULARY: string[] = [
   'nabh-protocols',
 ];
 
-// Domain keyword corpus for content-based filtering (TF-IDF style)
 const DOMAIN_KEYWORD_CORPUS: Record<string, string[]> = {
   panchakarma: ['panchakarma', 'panchkarma', 'detox', 'vamana', 'virechana', 'basti', 'nasya', 'raktamokshana', 'shodhana'],
   clinical: ['clinical', 'patient', 'hospital', 'ward', 'OPD', 'IPD', 'diagnosis', 'treatment', 'therapy', 'medical'],
@@ -39,42 +38,60 @@ const DOMAIN_KEYWORD_CORPUS: Record<string, string[]> = {
   botany: ['botany', 'herb', 'plant', 'dravyaguna', 'identification', 'taxonomy', 'pharmacognosy'],
 };
 
-/**
- * Content-Based Filtering — TF-IDF Keyword Overlap
- * Computes semantic similarity between student's bio/interests and opportunity text.
- * Returns a Jaccard-style coefficient in [0, 1]
- */
-export function computeContentSimilarity(student: StudentProfile, opportunity: Opportunity): number {
-  const studentText = [
+// Pre-compiled lowercased keyword array avoids repeated string normalization in hot ranking loops
+const PRECOMPILED_KEYWORDS: readonly string[] = Object.values(DOMAIN_KEYWORD_CORPUS).flatMap((list) =>
+  list.map((kw) => kw.toLowerCase())
+);
+
+function buildStudentSearchText(student: StudentProfile): string {
+  return [
     student.bio || '',
     ...(student.interests || []),
     ...student.skills.map((s) => s.skillName),
   ]
     .join(' ')
     .toLowerCase();
+}
 
-  const oppText = [
+function buildOpportunitySearchText(opportunity: Opportunity): string {
+  return [
     opportunity.title || '',
     opportunity.company || '',
     ...(opportunity.targetDomain || []),
     ...opportunity.requiredSkills.map((s) => s.skillName),
+    opportunity.description || '',
   ]
     .join(' ')
     .toLowerCase();
+}
 
+/**
+ * Computes Jaccard similarity over pre-matched student keyword hits and opportunity text.
+ */
+function computeContentSimilarityFromMask(studentMatchedFlags: boolean[], oppText: string): number {
   let matchedKeywords = 0;
   let unionKeywords = 0;
 
-  for (const keywords of Object.values(DOMAIN_KEYWORD_CORPUS)) {
-    for (const keyword of keywords) {
-      const studentHas = studentText.includes(keyword.toLowerCase());
-      const oppHas = oppText.includes(keyword.toLowerCase());
-      if (studentHas || oppHas) unionKeywords++;
-      if (studentHas && oppHas) matchedKeywords++;
-    }
+  for (let i = 0; i < PRECOMPILED_KEYWORDS.length; i++) {
+    const studentHas = studentMatchedFlags[i];
+    const oppHas = oppText.includes(PRECOMPILED_KEYWORDS[i]);
+    if (studentHas || oppHas) unionKeywords++;
+    if (studentHas && oppHas) matchedKeywords++;
   }
 
   return unionKeywords > 0 ? matchedKeywords / unionKeywords : 0;
+}
+
+/**
+ * Content-Based Filtering — TF-IDF Keyword Overlap
+ * Computes semantic similarity between student's bio/interests and opportunity text.
+ * Returns a Jaccard-style coefficient in [0, 1].
+ */
+export function computeContentSimilarity(student: StudentProfile, opportunity: Opportunity): number {
+  const studentText = buildStudentSearchText(student);
+  const oppText = buildOpportunitySearchText(opportunity);
+  const studentFlags = PRECOMPILED_KEYWORDS.map((kw) => studentText.includes(kw));
+  return computeContentSimilarityFromMask(studentFlags, oppText);
 }
 
 export interface FeatureVector {
@@ -83,52 +100,51 @@ export interface FeatureVector {
 }
 
 /**
- * Converts a student profile into a normalized mathematical feature vector
+ * Converts a student profile into a normalized mathematical feature vector.
  */
 export function vectorizeStudent(student: StudentProfile): FeatureVector {
   const skillLevelMap = new Map<string, number>();
-  student.skills.forEach((s) => {
-    // Verified skills get an institutional credibility boost (+0.5)
+  for (const s of student.skills) {
+    // Verified skills receive an institutional credibility multiplier
     const credibilityMultiplier = s.isVerified ? 1.1 : 1.0;
     skillLevelMap.set(s.skillId, Math.min(5, s.level * credibilityMultiplier));
-  });
+  }
 
-  const dimensions: number[] = SKILL_FEATURE_VOCABULARY.map((skillId) => {
-    return skillLevelMap.get(skillId) || 0;
-  });
-
-  // Calculate Euclidean Norm ||A|| = sqrt(sum(x_i^2))
+  const dimensions = new Array<number>(SKILL_FEATURE_VOCABULARY.length);
   let sumSq = 0;
-  dimensions.forEach((val) => (sumSq += val * val));
-  const norm = Math.sqrt(sumSq);
 
-  return { dimensions, norm };
+  for (let i = 0; i < SKILL_FEATURE_VOCABULARY.length; i++) {
+    const val = skillLevelMap.get(SKILL_FEATURE_VOCABULARY[i]) || 0;
+    dimensions[i] = val;
+    sumSq += val * val;
+  }
+
+  return { dimensions, norm: Math.sqrt(sumSq) };
 }
 
 /**
- * Converts an opportunity's requirements into an importance-weighted feature vector
+ * Converts an opportunity's requirements into an importance-weighted feature vector.
  */
 export function vectorizeOpportunity(opportunity: Opportunity): FeatureVector {
   const reqMap = new Map<string, { level: number; weight: number }>();
-  opportunity.requiredSkills.forEach((req) => {
+  for (const req of opportunity.requiredSkills) {
     reqMap.set(req.skillId, {
       level: req.requiredLevel,
       weight: req.importanceWeight,
     });
-  });
+  }
 
-  const dimensions: number[] = SKILL_FEATURE_VOCABULARY.map((skillId) => {
-    const item = reqMap.get(skillId);
-    if (!item) return 0;
-    // Weight scales the vector coordinate importance in n-dimensional Euclidean space
-    return item.level * (item.weight / 3.0);
-  });
-
+  const dimensions = new Array<number>(SKILL_FEATURE_VOCABULARY.length);
   let sumSq = 0;
-  dimensions.forEach((val) => (sumSq += val * val));
-  const norm = Math.sqrt(sumSq);
 
-  return { dimensions, norm };
+  for (let i = 0; i < SKILL_FEATURE_VOCABULARY.length; i++) {
+    const item = reqMap.get(SKILL_FEATURE_VOCABULARY[i]);
+    const val = item ? item.level * (item.weight / 3.0) : 0;
+    dimensions[i] = val;
+    sumSq += val * val;
+  }
+
+  return { dimensions, norm: Math.sqrt(sumSq) };
 }
 
 /**
@@ -139,21 +155,21 @@ export function vectorizeOpportunity(opportunity: Opportunity): FeatureVector {
 export function computeCosineSimilarity(vecA: FeatureVector, vecB: FeatureVector): number {
   if (vecA.norm === 0 || vecB.norm === 0) return 0;
 
+  const len = Math.min(vecA.dimensions.length, vecB.dimensions.length);
   let dotProduct = 0;
-  for (let i = 0; i < vecA.dimensions.length; i++) {
+  for (let i = 0; i < len; i++) {
     dotProduct += vecA.dimensions[i] * vecB.dimensions[i];
   }
 
   const similarity = dotProduct / (vecA.norm * vecB.norm);
-  // Bound to [0, 1]
   return Math.max(0, Math.min(1, similarity));
 }
 
 export interface AIMatchResult {
   opportunity: Opportunity;
-  cosineSimilarity: number;              // Layer 1: Vector dot product similarity (0 - 1)
-  contentFilteringSimilarity: number;    // Layer 2: TF-IDF keyword overlap (0 - 1)
-  compositeMatchScore: number;           // Normalized composite percentage (0 - 100%)
+  cosineSimilarity: number;
+  contentFilteringSimilarity: number;
+  compositeMatchScore: number;
   matchedCompetencies: {
     skillId: string;
     skillName: string;
@@ -173,80 +189,82 @@ export interface AIMatchResult {
 /**
  * AI Recommendation Ranker
  * Evaluates candidate against a library of opportunities using vector cosine similarity
- * fused with domain eligibility and mode affinity.
+ * fused with content filtering and domain/mode affinity.
  */
 export function rankOpportunitiesWithAI(
   student: StudentProfile,
   opportunities: Opportunity[]
 ): AIMatchResult[] {
+  // Pre-compute candidate structures once outside the opportunity loop (O(K) instead of O(N*K))
   const studentVec = vectorizeStudent(student);
+  const studentText = buildStudentSearchText(student);
+  const studentKeywordMask = PRECOMPILED_KEYWORDS.map((kw) => studentText.includes(kw));
+  const studentInterestSet = new Set(student.interests || []);
+  const studentSkillMap = new Map(student.skills.map((s) => [s.skillId, s.level]));
 
-  const ranked = opportunities.map((opp) => {
+  const ranked: AIMatchResult[] = opportunities.map((opp) => {
     const oppVec = vectorizeOpportunity(opp);
-    // Layer 1: Vector Cosine Similarity
     const cosine = computeCosineSimilarity(studentVec, oppVec);
+    const contentSim = computeContentSimilarityFromMask(
+      studentKeywordMask,
+      buildOpportunitySearchText(opp)
+    );
 
-    // Layer 2: Content-Based Filtering (TF-IDF keyword overlap)
-    const contentSim = computeContentSimilarity(student, opp);
-
-    // Layer 3: Domain Affinity Bonus (normalized to [0, 1])
     let domainBonus = 0;
-    if (opp.targetDomain.some((d) => student.interests.includes(d))) {
-      domainBonus += 0.60;
+    if (opp.targetDomain.some((d) => studentInterestSet.has(d))) {
+      domainBonus += 0.6;
     }
     if (opp.mode === student.preferredMode || opp.mode === 'Hybrid') {
-      domainBonus += 0.40;
+      domainBonus += 0.4;
     }
 
     // Composite Score: 55% Vector Cosine + 25% Content Filtering + 20% Domain Affinity
-    const compositeScore = Math.min(99, Math.round((cosine * 0.55 + contentSim * 0.25 + domainBonus * 0.20) * 100));
+    const compositeScore = Math.min(
+      99,
+      Math.round((cosine * 0.55 + contentSim * 0.25 + domainBonus * 0.2) * 100)
+    );
 
-    // Analyze competency alignment
-    const studentSkillMap = new Map(student.skills.map((s) => [s.skillId, s]));
-    const matchedCompetencies = opp.requiredSkills.map((req) => {
-      const studentSkill = studentSkillMap.get(req.skillId);
-      const studentLevel = studentSkill ? studentSkill.level : 0;
+    const matchedCompetencies: AIMatchResult['matchedCompetencies'] = [];
+    const criticalGaps: SkillGapItem[] = [];
+    let topStrength: AIMatchResult['matchedCompetencies'][number] | undefined;
+
+    for (const req of opp.requiredSkills) {
+      const studentLevel = studentSkillMap.get(req.skillId) ?? 0;
       let alignment: 'Superior' | 'Optimal' | 'Developing' | 'Deficit' = 'Deficit';
       if (studentLevel > req.requiredLevel) alignment = 'Superior';
       else if (studentLevel === req.requiredLevel) alignment = 'Optimal';
       else if (studentLevel >= req.requiredLevel - 1) alignment = 'Developing';
 
-      return {
+      const competency = {
         skillId: req.skillId,
         skillName: req.skillName,
         studentLevel,
         requiredLevel: req.requiredLevel,
         alignment,
       };
-    });
+      matchedCompetencies.push(competency);
 
-    // Identify critical gaps
-    const criticalGaps: SkillGapItem[] = opp.requiredSkills
-      .filter((req) => {
-        const studentSkill = studentSkillMap.get(req.skillId);
-        const studentLevel = studentSkill ? studentSkill.level : 0;
-        return studentLevel < req.requiredLevel;
-      })
-      .map((req) => {
-        const studentSkill = studentSkillMap.get(req.skillId);
-        const studentLevel = studentSkill ? studentSkill.level : 0;
+      if (!topStrength && (alignment === 'Superior' || alignment === 'Optimal')) {
+        topStrength = competency;
+      }
+
+      if (studentLevel < req.requiredLevel) {
         const diff = req.requiredLevel - studentLevel;
-        return {
+        const gapScore = diff * req.importanceWeight;
+        criticalGaps.push({
           skillId: req.skillId,
           skillName: req.skillName,
           requiredLevel: req.requiredLevel,
           studentLevel,
           importance: req.importanceWeight,
-          gapScore: diff * req.importanceWeight,
-          severity: diff * req.importanceWeight >= 8 ? 'High' : diff * req.importanceWeight >= 4 ? 'Medium' : 'Low',
+          gapScore,
+          severity: gapScore >= 8 ? 'High' : gapScore >= 4 ? 'Medium' : 'Low',
           recommendationAction: `Complete Bridge Course: ${req.skillName} Proficiency (Target ${req.requiredLevel}/5)`,
-        };
-      });
+        });
+      }
+    }
 
-    // Explainability reasoning
-    const topStrength = matchedCompetencies.find((c) => c.alignment === 'Superior' || c.alignment === 'Optimal');
     const primaryDeficit = criticalGaps[0];
-
     let reasoning = `High vector alignment (${Math.round(cosine * 100)}% Cosine). `;
     if (topStrength) {
       reasoning += `Strong core foundation in ${topStrength.skillName} (Level ${topStrength.studentLevel}/5). `;

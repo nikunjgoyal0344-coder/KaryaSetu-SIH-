@@ -9,7 +9,6 @@ import {
   BookOpenCheck,
   ShieldCheck,
   Lock,
-  Mail,
   User,
   Eye,
   EyeOff,
@@ -19,6 +18,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function LoginForm() {
   const router = useRouter();
@@ -44,7 +44,7 @@ function LoginForm() {
       idLabel: 'Student ID / DigiLocker ID / Email',
       idPlaceholder: 'e.g. STU-2024-8841 or ananya.sharma@aiia.gov.in',
       demoId: 'STU-2024-8841',
-      demoPass: 'Student@2026',
+      demoEmail: 'ananya.sharma@aiia.gov.in',
       route: '/student/dashboard',
     },
     industry: {
@@ -53,7 +53,7 @@ function LoginForm() {
       idLabel: 'Corporate Partner ID / Official Email',
       idPlaceholder: 'e.g. IND-CORP-402 or r_and_d@dabur.com',
       demoId: 'IND-CORP-402',
-      demoPass: 'Industry@2026',
+      demoEmail: 'v.malhotra@dabur.com',
       route: '/industry/dashboard',
     },
     faculty: {
@@ -62,7 +62,7 @@ function LoginForm() {
       idLabel: 'Faculty ID / Institutional Email',
       idPlaceholder: 'e.g. FAC-AIIA-108 or rajesh.mishra@aiia.gov.in',
       demoId: 'FAC-AIIA-108',
-      demoPass: 'Faculty@2026',
+      demoEmail: 'rajesh.mishra@aiia.gov.in',
       route: '/faculty/dashboard',
     },
     institution: {
@@ -71,7 +71,7 @@ function LoginForm() {
       idLabel: 'AISHE Code / Administrator Email',
       idPlaceholder: 'e.g. AISHE-U-0123 or registrar@aiia.gov.in',
       demoId: 'AISHE-U-0123',
-      demoPass: 'Admin@2026',
+      demoEmail: 'dean.academics@aiia.gov.in',
       route: '/institution/dashboard',
     },
   };
@@ -80,11 +80,11 @@ function LoginForm() {
 
   const handleFillDemo = () => {
     setUserId(currentMeta.demoId);
-    setPassword(currentMeta.demoPass);
+    setPassword(`${selectedRole.toUpperCase()}-DEMO-AUTH`);
     setErrorMessage('');
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId.trim()) {
       setErrorMessage('Please enter your ID, DigiLocker ID, or registered Email.');
@@ -100,6 +100,19 @@ function LoginForm() {
     }
 
     setErrorMessage('');
+    try {
+      await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: selectedRole,
+          email: userId.includes('@') ? userId.trim() : currentMeta.demoEmail,
+        }),
+      });
+    } catch {
+      // Fallback gracefully in offline mode while local context initializes session
+    }
+
     login(selectedRole);
     addNotification({
       title: `Logged into ${currentMeta.name}`,
@@ -114,9 +127,9 @@ function LoginForm() {
       {/* Brand Emblem Header */}
       <div className="text-center mb-6">
         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-400/60 mx-auto mb-3 shadow-sm bg-navy-900 flex items-center justify-center">
-          <img src="/logo.png" alt="KaryaSetu Logo" className="w-full h-full object-cover scale-110" />
+          <Image src="/logo.png" alt="KaryaSetu Logo" width={64} height={62} priority className="w-full h-full object-cover scale-110" />
         </div>
-        <h2 className="text-2xl font-extrabold text-navy-900 dark:text-white">Log In to KaryaSetu</h2>
+        <h1 className="text-2xl font-extrabold text-navy-900 dark:text-white">Log In to KaryaSetu</h1>
         <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 font-medium">
           National Academia–Industry Collaboration Platform (AIIA / Ayush)
         </p>
@@ -169,8 +182,11 @@ function LoginForm() {
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div
+          role="alert"
+          className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -178,12 +194,13 @@ function LoginForm() {
       {/* Log In Form */}
       <form onSubmit={handleLogin} className="space-y-4 text-xs">
         <div>
-          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+          <label htmlFor="login-userid" className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             {currentMeta.idLabel}
           </label>
           <div className="relative">
-            <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
             <input
+              id="login-userid"
               type="text"
               value={userId}
               onChange={(e) => {
@@ -199,7 +216,7 @@ function LoginForm() {
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="block text-slate-700 dark:text-slate-300 font-semibold">
+            <label htmlFor="login-password" className="block text-slate-700 dark:text-slate-300 font-semibold">
               Password
             </label>
             <button
@@ -207,13 +224,14 @@ function LoginForm() {
               onClick={handleFillDemo}
               className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
             >
-              <Sparkles className="w-3 h-3" />
+              <Sparkles className="w-3 h-3" aria-hidden="true" />
               <span>Fill Sample Credentials</span>
             </button>
           </div>
           <div className="relative">
-            <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
             <input
+              id="login-password"
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => {
@@ -229,6 +247,7 @@ function LoginForm() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
               title={showPassword ? 'Hide Password' : 'Show Password'}
+              aria-label={showPassword ? 'Hide Password' : 'Show Password'}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>

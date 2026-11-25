@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useApp } from '@/lib/store';
 import { getCurrentUser } from '@/lib/auth';
@@ -18,9 +19,7 @@ import {
   BookOpen,
   GraduationCap,
   Building2,
-  CheckCircle2,
   LogOut,
-  Sparkles,
   ShieldCheck,
   BarChart3,
   Network,
@@ -34,7 +33,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { role, isLoggedIn, logout, student, language, setLanguage } = useApp();
+  const { role, isLoggedIn, logout, language, setLanguage } = useApp();
   const currentUser = getCurrentUser(role);
 
   const studentLinks = [
@@ -84,7 +83,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-amber-400/60 shadow-sm bg-navy-800 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                <img src="/logo.png" alt="KaryaSetu Logo" className="w-full h-full object-cover scale-110" />
+                <Image src="/logo.png" alt="KaryaSetu Logo" width={44} height={42} priority className="w-full h-full object-cover scale-110" />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5 sm:gap-2">
@@ -104,7 +103,7 @@ export default function Navbar() {
 
           {/* Navigation Links - Only shown if logged in */}
           {isLoggedIn ? (
-            <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+            <nav aria-label="Primary portal navigation" className="hidden md:flex items-center space-x-1 lg:space-x-2">
               {links.map((link) => {
                 const Icon = link.icon;
                 const isActive = pathname === link.href;
@@ -112,13 +111,14 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
+                    aria-current={isActive ? 'page' : undefined}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                       isActive
                         ? 'bg-saffron text-white font-bold shadow-xs'
                         : 'text-slate-200 hover:text-white hover:bg-navy-800'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-300'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-300'}`} aria-hidden="true" />
                     <span>{link.label}</span>
                   </Link>
                 );
@@ -164,7 +164,7 @@ export default function Navbar() {
               title={language === 'en' ? 'Click to change site language to Hindi (हिन्दी)' : 'Click to change site language to English'}
               aria-label="Toggle language"
             >
-              <span className="text-xs">🌐</span>
+              <span className="text-xs" aria-hidden="true">🌐</span>
               <span className="font-bold">{language === 'en' ? 'हिन्दी' : 'English'}</span>
             </button>
 
@@ -195,9 +195,10 @@ export default function Navbar() {
                   type="button"
                   onClick={handleLogout}
                   title="Sign Out to switch role"
+                  aria-label="Sign out"
                   className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-navy-800 hover:bg-rose-950/60 text-slate-300 hover:text-rose-400 font-semibold text-xs border border-navy-700 hover:border-rose-900 transition-all shadow-2xs"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
                   <span>{t('logout', language)}</span>
                 </button>
               </div>
@@ -215,7 +216,7 @@ export default function Navbar() {
                   className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-bold text-white bg-saffron hover:bg-saffron-hover shadow-sm transition-all flex items-center gap-1"
                 >
                   <span>{language === 'hi' ? 'साइन इन' : 'Sign In'}</span>
-                  <ArrowRight className="w-3.5 h-3.5 hidden sm:inline-block" />
+                  <ArrowRight className="w-3.5 h-3.5 hidden sm:inline-block" aria-hidden="true" />
                 </Link>
               </div>
             )}
@@ -226,6 +227,7 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-1.5 sm:p-2 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-200 border border-navy-700 transition-colors"
               aria-label="Toggle navigation drawer"
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>

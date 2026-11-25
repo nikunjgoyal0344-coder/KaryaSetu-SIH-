@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
 import { LEARNING_RECOMMENDATIONS } from '@/lib/seedData';
+import {
+  ALLOWED_APPLICATION_STATUSES,
+  isAllowedEnum,
+  sanitizeString,
+} from '@/lib/security';
+import { badRequest, enforceRateLimit, notFound, parseJsonBody, serverError, verifyOptionalSessionRole } from '@/lib/apiHelpers';
 
 /**
  * GET /api/applications
@@ -9,7 +15,7 @@ import { LEARNING_RECOMMENDATIONS } from '@/lib/seedData';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const oppId = searchParams.get('opportunityId');
+    const oppId = sanitizeString(searchParams.get('opportunityId'), 64);
     let list = db.getApplications();
 
     if (oppId) {
@@ -21,11 +27,8 @@ export async function GET(req: NextRequest) {
       count: list.length,
       applications: list,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch applications' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('applications:GET', error, 'Failed to fetch applications');
   }
 }
 
@@ -34,27 +37,36 @@ export async function GET(req: NextRequest) {
  * Submits a 1-click candidate application for an opportunity.
  */
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'applications:post', 40, 60_000);
+  if (limited) return limited;
+
+  const authError = verifyOptionalSessionRole(req, ['student']);
+  if (authError) return authError;
+
   try {
-    const body = await req.json();
-    const { opportunityId, studentName, college } = body;
+    const body = await parseJsonBody<{
+      opportunityId?: unknown;
+      studentName?: unknown;
+      college?: unknown;
+    }>(req);
+
+    if (!body) {
+      return badRequest('Invalid JSON request body');
+    }
+
+    const opportunityId = sanitizeString(body.opportunityId, 64);
+    const studentName = sanitizeString(body.studentName, 120) || undefined;
+    const college = sanitizeString(body.college, 150) || undefined;
 
     if (!opportunityId) {
-      return NextResponse.json(
-        { success: false, error: 'opportunityId is required' },
-        { status: 400 }
-      );
+      return badRequest('opportunityId is required');
     }
 
     const application = db.createApplication(opportunityId, studentName, college);
-
     if (!application) {
-      return NextResponse.json(
-        { success: false, error: 'Opportunity not found' },
-        { status: 404 }
-      );
+      return notFound('Opportunity not found');
     }
 
-    // Trigger notification
     db.addNotification({
       title: 'Application Submitted',
       message: `Your application for ${application.opportunityTitle} at ${application.company} was received.`,
@@ -66,52 +78,44 @@ export async function POST(req: NextRequest) {
       success: true,
       application,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Application submission failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('applications:POST', error, 'Application submission failed');
   }
 }
 
 /**
  * PATCH /api/applications
  * Recruiter updates applicant status (Shortlisted, Selected, Rejected).
- * Enhanced with automated feedback loop:
- *   - Selected   → readiness score boost +2, success notification
- *   - Rejected   → skill gap analysis, remediation notification with bridge course links
- *   - Shortlisted → congratulations notification
- * After ANY status change: matching engine recalibration + new-matches notification
+ * Enhanced with automated feedback loop and matching engine recalibration.
  */
-const ALLOWED_APPLICATION_STATUSES = ['Applied', 'Under Review', 'Shortlisted', 'Selected', 'Rejected'] as const;
-type ApplicationStatus = (typeof ALLOWED_APPLICATION_STATUSES)[number];
-
 export async function PATCH(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'applications:patch', 40, 60_000);
+  if (limited) return limited;
+
+  const authError = verifyOptionalSessionRole(req, ['industry', 'institution']);
+  if (authError) return authError;
+
   try {
-    const body = await req.json().catch(() => ({}));
-    const { applicationId, status } = body;
-
-    if (!applicationId || typeof applicationId !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'applicationId is required and must be a string' },
-        { status: 400 }
-      );
+    const body = await parseJsonBody<{ applicationId?: unknown; status?: unknown }>(req);
+    if (!body) {
+      return badRequest('Invalid JSON request body');
     }
 
-    if (!status || !ALLOWED_APPLICATION_STATUSES.includes(status as ApplicationStatus)) {
-      return NextResponse.json(
-        { success: false, error: `Invalid status. Must be one of: ${ALLOWED_APPLICATION_STATUSES.join(', ')}` },
-        { status: 400 }
+    const applicationId = sanitizeString(body.applicationId, 64);
+    if (!applicationId) {
+      return badRequest('applicationId is required and must be a string');
+    }
+
+    if (!isAllowedEnum(body.status, ALLOWED_APPLICATION_STATUSES)) {
+      return badRequest(
+        `Invalid status. Must be one of: ${ALLOWED_APPLICATION_STATUSES.join(', ')}`
       );
     }
+    const status = body.status;
 
     const updated = db.updateApplicationStatus(applicationId, status);
-
     if (!updated) {
-      return NextResponse.json(
-        { success: false, error: 'Application not found' },
-        { status: 404 }
-      );
+      return notFound('Application not found');
     }
 
     let notification;
@@ -220,10 +224,7 @@ export async function PATCH(req: NextRequest) {
       },
       notification,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Status update failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('applications:PATCH', error, 'Status update failed');
   }
 }

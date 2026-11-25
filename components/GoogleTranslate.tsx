@@ -5,9 +5,18 @@ import Script from 'next/script';
 import { useApp } from '@/lib/store';
 import { usePathname } from 'next/navigation';
 
+interface GoogleTranslateInstance {
+  translate?: {
+    TranslateElement?: new (
+      options: { pageLanguage: string; includedLanguages: string; autoDisplay: boolean },
+      elementId: string
+    ) => unknown;
+  };
+}
+
 declare global {
   interface Window {
-    google?: any;
+    google?: GoogleTranslateInstance;
     googleTranslateElementInit?: () => void;
   }
 }

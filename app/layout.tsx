@@ -1,15 +1,18 @@
 import type { Metadata, Viewport } from 'next';
+import dynamic from 'next/dynamic';
 import './globals.css';
 import { AppProvider } from '@/lib/store';
-import RoleSwitcher from '@/components/RoleSwitcher';
 import Navbar from '@/components/Navbar';
-import LiveWallpaper from '@/components/LiveWallpaper';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import GovTopBanner from '@/components/GovTopBanner';
 import GovFooter from '@/components/GovFooter';
-import GoogleTranslate from '@/components/GoogleTranslate';
-import AiChatbot from '@/components/AiChatbot';
 import { Analytics } from '@vercel/analytics/next';
+
+// Defer heavy client-only overlays to reduce initial bundle weight and speed up hydration
+const LiveWallpaper = dynamic(() => import('@/components/LiveWallpaper'), { ssr: false });
+const GoogleTranslate = dynamic(() => import('@/components/GoogleTranslate'), { ssr: false });
+const AiChatbot = dynamic(() => import('@/components/AiChatbot'), { ssr: false });
+const ScrollProgressBar = dynamic(() => import('@/components/ScrollProgressBar'), { ssr: false });
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -37,10 +40,6 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
-          rel="stylesheet"
-        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -60,13 +59,23 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col bg-surface text-on-surface antialiased transition-colors relative">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-navy-900 focus:text-white focus:font-bold focus:text-xs focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-saffron"
+        >
+          Skip to main content
+        </a>
         <AppProvider>
+          <ScrollProgressBar />
           <GoogleTranslate />
           <GovTopBanner />
           <LiveWallpaper />
-          <RoleSwitcher />
           <Navbar />
-          <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-28 md:pb-10 relative z-10">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-28 md:pb-10 relative z-10 focus:outline-none"
+          >
             {children}
           </main>
           <MobileBottomNav />

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
 import { AYUSH_SKILLS_TAXONOMY } from '@/lib/taxonomy';
+import { serverError } from '@/lib/apiHelpers';
+
+export const dynamic = 'force-dynamic';
 
 // ─── Response Types ───────────────────────────────────────────────────────────
 
@@ -208,7 +211,6 @@ export async function GET() {
 
     return NextResponse.json(response);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Analytics aggregation failed';
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return serverError('analytics/demand', error, 'Analytics aggregation failed');
   }
 }

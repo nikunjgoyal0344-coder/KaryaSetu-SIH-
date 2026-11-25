@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
 import { AYUSH_SKILLS_TAXONOMY } from '@/lib/taxonomy';
+import { isAllowedEnum, sanitizeString } from '@/lib/security';
+import { badRequest, getRestrictedCorsHeaders, parseJsonBody, serverError } from '@/lib/apiHelpers';
 
 /**
  * Bridge course catalog for AI-driven gap remediation recommendations.
@@ -96,57 +98,41 @@ const TARGET_LEVELS: Record<string, number> = {
   'yoga-therapy': 3,
 };
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+const CORS_HEADERS = getRestrictedCorsHeaders('POST, OPTIONS');
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
-/**
- * POST /api/ai/assessment
- * Evaluates a skill quiz submission, updates the student skill level in the DB,
- * and returns a comprehensive gap analysis across all 8 core AYUSH skills.
- *
- * Request body:
- *   { studentId: string, skillId: string, answers: number[], quizType: 'theory' | 'practical' }
- *   - answers: array of per-question scores, each 0–4 (up to 5 questions)
- *
- * Response:
- *   { newLevel, oldLevel, levelGain, gapAnalysis, updatedReadinessScore, notification }
- */
+const VALID_QUIZ_TYPES = ['theory', 'practical'] as const;
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { studentId, skillId, answers, quizType } = body as {
-      studentId: string;
-      skillId: string;
-      answers: number[];
-      quizType: 'theory' | 'practical';
-    };
+    const body = await parseJsonBody<{
+      studentId?: unknown;
+      skillId?: unknown;
+      answers?: unknown;
+      quizType?: unknown;
+    }>(req);
+
+    if (!body) {
+      return badRequest('Invalid JSON request body', CORS_HEADERS);
+    }
+
+    const skillId = sanitizeString(body.skillId, 80);
+    const answers = body.answers;
+    const quizType = isAllowedEnum(body.quizType, VALID_QUIZ_TYPES) ? body.quizType : 'theory';
 
     // --- Validation ---
     if (!skillId || !Array.isArray(answers) || answers.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid request body. skillId and answers are required.' },
-        { status: 400, headers: CORS_HEADERS }
-      );
+      return badRequest('Invalid request body. skillId and answers are required.', CORS_HEADERS);
     }
     if (answers.length > 5) {
-      return NextResponse.json(
-        { success: false, error: 'Maximum 5 answers allowed per assessment.' },
-        { status: 400, headers: CORS_HEADERS }
-      );
+      return badRequest('Maximum 5 answers allowed per assessment.', CORS_HEADERS);
     }
     for (const score of answers) {
-      if (typeof score !== 'number' || score < 0 || score > 4) {
-        return NextResponse.json(
-          { success: false, error: 'Each answer score must be a number between 0 and 4.' },
-          { status: 400, headers: CORS_HEADERS }
-        );
+      if (typeof score !== 'number' || !Number.isFinite(score) || score < 0 || score > 4) {
+        return badRequest('Each answer score must be a finite number between 0 and 4.', CORS_HEADERS);
       }
     }
 
@@ -222,11 +208,7 @@ export async function POST(req: NextRequest) {
       },
       { headers: CORS_HEADERS }
     );
-  } catch (error: any) {
-    console.error('[/api/ai/assessment] Error:', error);
-    return NextResponse.json(
-      { success: false, error: error?.message ?? 'Internal server error' },
-      { status: 500, headers: CORS_HEADERS }
-    );
+  } catch (error: unknown) {
+    return serverError('ai/assessment', error, 'Internal server error', CORS_HEADERS);
   }
 }

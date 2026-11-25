@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
 import { AYUSH_SKILLS_TAXONOMY } from '@/lib/taxonomy';
+import { serverError } from '@/lib/apiHelpers';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -265,8 +266,7 @@ export async function POST(req: NextRequest) {
       estimatedCompletionWeeks,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Learning path generation failed';
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return serverError('ai/recommend-learning', error, 'Learning path generation failed');
   }
 }
 

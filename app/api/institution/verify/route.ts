@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { db } from '@/lib/backend/db';
+import {
+  ALLOWED_VERIFICATION_ACTIONS,
+  createAttestationDigest,
+  isAllowedEnum,
+  sanitizeString,
+} from '@/lib/security';
+import { badRequest, enforceRateLimit, notFound, parseJsonBody, serverError, verifyOptionalSessionRole } from '@/lib/apiHelpers';
 
 /**
  * GET /api/institution/verify
@@ -14,11 +20,8 @@ export async function GET() {
       count: list.length,
       unverifiedStudents: list,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch verification queue' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('institution/verify:GET', error, 'Failed to fetch verification queue');
   }
 }
 
@@ -27,29 +30,36 @@ export async function GET() {
  * Dean / Institutional Authority officially verifies or flags a student's credentials.
  */
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'institution:verify', 30, 60_000);
+  if (limited) return limited;
+
+  const authError = verifyOptionalSessionRole(req, ['institution']);
+  if (authError) return authError;
+
   try {
-    const body = await req.json();
-    const { studentId, action = 'Verified' } = body;
+    const body = await parseJsonBody<{ studentId?: unknown; action?: unknown }>(req);
+    if (!body) {
+      return badRequest('Invalid JSON request body');
+    }
+
+    const studentId = sanitizeString(body.studentId, 64);
+    const action = body.action ?? 'Verified';
 
     if (!studentId) {
-      return NextResponse.json(
-        { success: false, error: 'studentId is required' },
-        { status: 400 }
-      );
+      return badRequest('studentId is required');
+    }
+
+    if (!isAllowedEnum(action, ALLOWED_VERIFICATION_ACTIONS)) {
+      return badRequest(`Invalid action. Must be one of: ${ALLOWED_VERIFICATION_ACTIONS.join(', ')}`);
     }
 
     const updated = db.verifyStudent(studentId, action);
-
     if (!updated) {
-      return NextResponse.json(
-        { success: false, error: 'Student not found in verification roster' },
-        { status: 404 }
-      );
+      return notFound('Student not found in verification roster');
     }
 
-    // Generate Institutional Sovereign Hash
     const rawData = `${studentId}:${updated.rollNumber}:${updated.cgpa}:${action}:${Date.now()}`;
-    const institutionalHash = crypto.createHash('sha256').update(rawData).digest('hex');
+    const institutionalHash = createAttestationDigest(rawData);
 
     db.addNotification({
       title: `Institutional Status: ${action}`,
@@ -64,10 +74,7 @@ export async function POST(req: NextRequest) {
       student: updated,
       cryptographicSeal: `AIIA-NEP-${institutionalHash.substring(0, 20).toUpperCase()}`,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Verification action failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('institution/verify:POST', error, 'Verification action failed');
   }
 }

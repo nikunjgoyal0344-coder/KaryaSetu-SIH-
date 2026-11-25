@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useApp } from '@/lib/store';
 import { t } from '@/lib/translations';
 
@@ -13,17 +14,17 @@ export default function GovFooter() {
         {/* Trust Strip Badges */}
         <div className="flex flex-wrap items-center justify-center gap-6 pb-8 mb-8 border-b border-slate-200 dark:border-slate-800 font-mono text-[11px] text-center">
           <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
-            <span className="text-base">🛡️</span>
+            <span className="text-base" aria-hidden="true">🛡️</span>
             <span>{t('digilocker', language)}</span>
           </div>
           <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
           <div className="flex items-center gap-1.5 text-navy-800 dark:text-blue-300 font-bold">
-            <span className="text-base">📜</span>
+            <span className="text-base" aria-hidden="true">📜</span>
             <span>{t('nsqf', language)}</span>
           </div>
           <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
           <div className="flex items-center gap-1.5 text-saffron-accent dark:text-amber-400 font-bold">
-            <span className="text-base">🏥</span>
+            <span className="text-base" aria-hidden="true">🏥</span>
             <span>{t('ayushGrid', language)}</span>
           </div>
         </div>
@@ -32,7 +33,7 @@ export default function GovFooter() {
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full border border-amber-400/50 overflow-hidden shadow-xs shrink-0 bg-navy-900 flex items-center justify-center">
-                <img alt="KaryaSetu Logo" className="w-full h-full object-cover scale-110" src="/logo.png" />
+                <Image alt="KaryaSetu Logo" width={36} height={35} className="w-full h-full object-cover scale-110" src="/logo.png" />
               </div>
               <span className="font-extrabold text-base text-navy-900 dark:text-blue-200">
                 {t('brandName', language)}

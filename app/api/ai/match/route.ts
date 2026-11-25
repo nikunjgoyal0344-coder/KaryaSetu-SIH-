@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
 import { rankOpportunitiesWithAI } from '@/lib/backend/aiEngine';
+import { enforceRateLimit, parseJsonBody, serverError } from '@/lib/apiHelpers';
+import type { StudentProfile } from '@/lib/seedData';
+import type { Opportunity } from '@/lib/matchingEngine';
 
 /**
  * POST /api/ai/match
@@ -8,10 +11,20 @@ import { rankOpportunitiesWithAI } from '@/lib/backend/aiEngine';
  * using mathematical Vector Cosine Similarity.
  */
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'ai:match', 60, 60_000);
+  if (limited) return limited;
+
   try {
-    const body = await req.json().catch(() => ({}));
-    const student = body.student || db.getStudent();
-    const opportunities = body.opportunities || db.getOpportunities();
+    const body =
+      (await parseJsonBody<{ student?: StudentProfile; opportunities?: Opportunity[] }>(req)) ?? {};
+    const student =
+      body.student && typeof body.student === 'object' && Array.isArray(body.student.skills)
+        ? body.student
+        : db.getStudent();
+    const opportunities =
+      Array.isArray(body.opportunities) && body.opportunities.length > 0
+        ? body.opportunities.slice(0, 100)
+        : db.getOpportunities();
 
     const rankedMatches = rankOpportunitiesWithAI(student, opportunities);
 
@@ -23,11 +36,8 @@ export async function POST(req: NextRequest) {
       totalEvaluated: opportunities.length,
       matches: rankedMatches,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'AI Matching failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('ai/match:POST', error, 'AI Matching failed');
   }
 }
 
@@ -48,10 +58,7 @@ export async function GET() {
       studentName: student.name,
       matches: rankedMatches,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'AI Matching failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('ai/match:GET', error, 'AI Matching failed');
   }
 }

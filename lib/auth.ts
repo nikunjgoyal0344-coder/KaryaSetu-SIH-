@@ -1,10 +1,26 @@
+export type UserRole = 'student' | 'industry' | 'faculty' | 'institution';
+
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: 'student' | 'industry' | 'faculty' | 'institution';
+  role: UserRole;
   avatar?: string;
   affiliation: string;
+}
+
+export const ROLE_PERMISSIONS: Record<UserRole, readonly string[]> = {
+  student: ['assessments:take', 'opportunities:view', 'applications:create', 'portfolio:view', 'abc:sync'],
+  industry: ['opportunities:create', 'applications:review', 'applications:shortlist', 'analytics:view'],
+  faculty: ['skills:endorse', 'students:mentor', 'fdp:apply'],
+  institution: ['students:verify', 'students:flag', 'analytics:export', 'abc:audit'],
+};
+
+/**
+ * Checks whether a stakeholder role has a granted capability in the RBAC policy matrix.
+ */
+export function hasRolePermission(role: UserRole, permission: string): boolean {
+  return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
 }
 
 export const DEMO_USERS: Record<string, AuthUser> = {

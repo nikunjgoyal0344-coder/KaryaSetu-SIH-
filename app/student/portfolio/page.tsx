@@ -8,16 +8,13 @@ import {
   Share2,
   Download,
   Building,
-  GraduationCap,
   Award,
   ShieldCheck,
   QrCode,
   CreditCard,
   Sparkles,
   TrendingUp,
-  AlertCircle,
   Copy,
-  ExternalLink,
   Layers,
 } from 'lucide-react';
 
@@ -78,8 +75,8 @@ const TIER_STYLES = {
 export default function PortfolioPage() {
   const { student } = useApp();
   const [profile, setProfile] = useState<GeneratedProfile | null>(null);
-  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -93,8 +90,6 @@ export default function PortfolioPage() {
         }
       } catch (err) {
         console.error('Failed to load AI generated profile', err);
-      } finally {
-        setLoading(false);
       }
     }
     fetchProfile();
@@ -107,11 +102,20 @@ export default function PortfolioPage() {
   };
 
   const handleCopySignature = () => {
-    if (profile?.digitalSignature && typeof navigator !== 'undefined') {
+    if (profile?.digitalSignature && typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(profile.digitalSignature);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleShareLink = () => {
+    const shareUrl = profile?.qrCodeUrl || 'https://karyasetu.gov.in/verify';
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).catch(() => {});
+    }
+    setShareMessage(`Copied public verifiable link: ${shareUrl}`);
+    setTimeout(() => setShareMessage(null), 4000);
   };
 
   const tier = profile?.verificationLevel || 'Gold';
@@ -119,6 +123,16 @@ export default function PortfolioPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 py-6 px-4 sm:px-6">
+      {shareMessage && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="px-4 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs font-semibold flex items-center gap-2 shadow-sm"
+        >
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
+          <span>{shareMessage}</span>
+        </div>
+      )}
       {/* Top Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -136,10 +150,11 @@ export default function PortfolioPage() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => alert(`Public Verifiable Link:\n${profile?.qrCodeUrl || 'https://karyasetu.gov.in/verify'}`)}
+            type="button"
+            onClick={handleShareLink}
             className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
           >
-            <Share2 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <Share2 className="w-4 h-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
             <span>Share Link</span>
           </button>
 

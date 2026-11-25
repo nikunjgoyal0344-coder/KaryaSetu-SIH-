@@ -1,5 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
+import { serverError } from '@/lib/apiHelpers';
+
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/ai/demand-insights
@@ -14,7 +17,7 @@ import { db } from '@/lib/backend/db';
  *
  * Useful for students deciding which AYUSH skills to prioritise.
  */
-export async function GET(_req: NextRequest) {
+export async function GET() {
   try {
     const opportunities = db.getOpportunities();
     const lastUpdated = new Date().toISOString();
@@ -104,10 +107,7 @@ export async function GET(_req: NextRequest) {
       insights,
       lastUpdated,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to generate demand insights' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return serverError('ai/demand-insights', error, 'Failed to generate demand insights');
   }
 }

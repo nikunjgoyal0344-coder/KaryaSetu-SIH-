@@ -3,14 +3,10 @@
 import React, { useState } from 'react';
 import { useApp } from '@/lib/store';
 import {
-  Users,
   Search,
-  CheckCircle2,
   XCircle,
-  Clock,
   Sparkles,
   ExternalLink,
-  GraduationCap,
   Building,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -59,9 +55,10 @@ export default function ApplicantsPage() {
       {/* Filter and Search */}
       <div className="bg-white dark:bg-slate-900/90 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" aria-hidden="true" />
           <input
             type="text"
+            aria-label="Search candidates by name, college, or role"
             placeholder="Search candidates by name, college, or role..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -70,8 +67,9 @@ export default function ApplicantsPage() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-slate-600 dark:text-slate-300 font-semibold shrink-0">Status:</span>
+          <label htmlFor="applicant-status-filter" className="text-slate-600 dark:text-slate-300 font-semibold shrink-0">Status:</label>
           <select
+            id="applicant-status-filter"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-saffron"
