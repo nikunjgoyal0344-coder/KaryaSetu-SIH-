@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/backend/db';
-import { AYUSH_SKILLS_TAXONOMY, COMPETENCY_FRAMEWORK } from '@/lib/taxonomy';
-import { createAttestationDigest } from '@/lib/security';
+import { signStudentCredential } from '@/lib/credentialAttestation';
 import { serverError } from '@/lib/apiHelpers';
 
 export const dynamic = 'force-dynamic';
@@ -31,6 +30,7 @@ export interface GeneratedProfile {
   improvementAreas: string[];
   portfolioSummary: string;
   digitalSignature: string;
+  verifyPath: string;
   qrCodeUrl: string;
   abcCredits: number;
   totalVerifiedSkills: number;
@@ -48,21 +48,12 @@ export async function GET() {
     const student = db.getStudent();
     const verifiedSkills = student.skills.filter((s) => s.isVerified);
 
-    // 1. Calculate Weighted Competency Score (0 - 100)
-    let weightedSum = 0;
-    let totalWeight = 0;
-
-    student.skills.forEach((skill) => {
-      const taxonomyItem = AYUSH_SKILLS_TAXONOMY.find((t) => t.id === skill.skillId);
-      const category = taxonomyItem?.category || 'AYUSH Clinical';
-      const weight = COMPETENCY_FRAMEWORK.domainWeights[category as keyof typeof COMPETENCY_FRAMEWORK.domainWeights] || 0.15;
-      const verificationBonus = skill.isVerified ? 1.15 : 1.0;
-
-      weightedSum += (skill.level / 5) * 100 * weight * verificationBonus;
-      totalWeight += weight;
-    });
-
-    const competencyScore = totalWeight > 0 ? Math.min(99, Math.round(weightedSum / totalWeight)) : 80;
+    // 1. Compute canonical weighted competency score and HMAC attestation signature
+    const {
+      competencyScore,
+      digitalSignature,
+      verifyPath,
+    } = signStudentCredential(student);
 
     // 2. Verification Tier
     let verificationLevel: 'Bronze' | 'Silver' | 'Gold' | 'Platinum' = 'Bronze';
@@ -158,10 +149,9 @@ export async function GET() {
     // 6. Portfolio Summary (AI-generated)
     const portfolioSummary = `${student.name} is a high-performing ${student.degree} candidate at ${student.college} with an overall readiness index of ${student.readinessScore}%. Demonstrates expert proficiency in Panchakarma therapies, constitutional Prakriti analysis, and holistic patient counseling. Academic credits (${student.abcCredits || 148} credits) are securely mapped through the Academic Bank of Credits (APAAR), satisfying National Health Systems Resource Centre (NHSRC) and Healthcare Sector Skill Council (HSSC) qualification pack guidelines.`;
 
-    // 7. Cryptographic HMAC Signature & QR URL
-    const signaturePayload = `${student.id}:${student.name}:${competencyScore}:${verifiedSkills.length}:${student.abcCredits || 148}`;
-    const digitalSignature = `0x${createAttestationDigest(signaturePayload)}`;
-    const qrCodeUrl = `https://karyasetu.gov.in/verify-credential?scholar=${encodeURIComponent(student.name)}&score=${competencyScore}&sig=${digitalSignature.slice(0, 16)}`;
+    // 7. Cryptographic HMAC Signature & QR Verification URL
+    const appOrigin = (process.env.NEXT_PUBLIC_APP_URL || 'https://karyasetu.gov.in').replace(/\/$/, '');
+    const qrCodeUrl = `${appOrigin}${verifyPath}`;
 
     // 8. HSSC Alignment Packs
     const hsscAlignment = [
@@ -185,6 +175,7 @@ export async function GET() {
       improvementAreas,
       portfolioSummary,
       digitalSignature,
+      verifyPath,
       qrCodeUrl,
       abcCredits: student.abcCredits || 148,
       totalVerifiedSkills: verifiedSkills.length,

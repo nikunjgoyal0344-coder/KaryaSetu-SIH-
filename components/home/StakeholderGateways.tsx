@@ -52,8 +52,9 @@ const STAKEHOLDER_PORTALS = [
 export default function StakeholderGateways() {
   return (
     <section
+      id="gateways-section"
       aria-labelledby="gateways-heading"
-      className="w-full px-4 py-8 max-w-[1600px] mx-auto border-b border-slate-200 dark:border-slate-800"
+      className="scroll-mt-20 w-full px-4 py-8 max-w-[1600px] mx-auto border-b border-slate-200 dark:border-slate-800"
     >
       <ScrollReveal variant="fade-up" className="text-center max-w-2xl mx-auto mb-10">
         <span className="text-xs font-mono uppercase text-navy-800 dark:text-blue-300 font-bold tracking-wider bg-navy-100 dark:bg-navy-950 px-3 py-1 rounded-full border border-navy-200 dark:border-navy-800">

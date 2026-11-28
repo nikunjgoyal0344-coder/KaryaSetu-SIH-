@@ -136,8 +136,17 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Profile Section, System Workflow, Notifications & Theme Switcher */}
+          {/* Profile Section, Verify Registry, System Workflow, Notifications & Theme Switcher */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Sovereign Credential Verification Registry Link */}
+            <Link
+              href="/verify"
+              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-navy-800 hover:bg-navy-700 text-emerald-300 font-semibold text-xs border border-navy-700 transition-all shadow-2xs"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+              <span>Verify</span>
+            </Link>
+
             {/* System Workflow Visualizer Link */}
             <Link
               href="/workflow"

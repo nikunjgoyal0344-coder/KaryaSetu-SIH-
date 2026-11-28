@@ -27,11 +27,11 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Build Next.js production bundle
+        run: npm run build
+
       - name: Run TypeScript type check
         run: npx tsc --noEmit
 
       - name: Run unit & integration tests with coverage
         run: npm run test:coverage
-
-      - name: Build Next.js production bundle
-        run: npm run build

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useApp } from '@/lib/store';
 import { t } from '@/lib/translations';
 
@@ -69,6 +70,9 @@ export default function GovFooter() {
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left text-slate-600 dark:text-slate-400">
           <p>{t('rightsReserved', language)}</p>
           <div className="flex items-center gap-4 text-[11px]">
+            <Link className="hover:text-saffron transition-colors font-semibold" href="/verify">
+              Verify Credential
+            </Link>
             <a className="hover:text-saffron transition-colors" href="#">
               {t('privacy', language)}
             </a>

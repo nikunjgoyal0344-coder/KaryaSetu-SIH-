@@ -7,8 +7,11 @@ import PartnerMarquee from '@/components/home/PartnerMarquee';
 import StakeholderGateways from '@/components/home/StakeholderGateways';
 import TelemetryDashboard from '@/components/home/TelemetryDashboard';
 import WorkflowBanner from '@/components/home/WorkflowBanner';
+import ScrollDownCue from '@/components/home/ScrollDownCue';
+import FloatingLandingTaskbar from '@/components/home/FloatingLandingTaskbar';
 import ScrollProgressBar from '@/components/ScrollProgressBar';
 import ScrollReveal from '@/components/ScrollReveal';
+import { AppProvider } from '@/lib/store';
 import WhyMatchModal from '@/components/WhyMatchModal';
 import CompetencyRadarCard from '@/components/dashboard/CompetencyRadarCard';
 import SkillGapsCard from '@/components/dashboard/SkillGapsCard';
@@ -103,4 +106,17 @@ test('Scroll components, dashboard cards, and WhyMatchModal render with WCAG acc
   );
   assert.ok(gapsHtml.includes('Rasashastra'));
   assert.ok(gapsHtml.includes('Enrolled (Lvl 2)'));
+
+  const scrollCueHtml = renderToStaticMarkup(React.createElement(ScrollDownCue));
+  assert.ok(scrollCueHtml.includes('Scroll down to explore portals'));
+  assert.ok(scrollCueHtml.includes('animate-scroll-dot'));
+
+  const taskbarHtml = renderToStaticMarkup(
+    React.createElement(AppProvider, {
+      children: React.createElement(FloatingLandingTaskbar),
+    })
+  );
+  assert.ok(taskbarHtml.includes('aria-label="Dynamic landing page taskbar"'));
+  assert.ok(taskbarHtml.includes('aria-current="location"'));
+  assert.ok(taskbarHtml.includes('/verify'));
 });

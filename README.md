@@ -7,7 +7,7 @@
 ## Core Capabilities & Problem Alignment
 
 1. **Multi-Role Sovereign Portals**
-   - **Students (`student`)**: 8-axis HSSC Clinical Competency Radar, automated skill gap diagnostics ($W_{imp} \times (\text{Req} - \text{Cur})$), DigiLocker **ABC / APAAR** credit ledger sync, verifiable digital skill passport, and 1-click applications.
+   - **Students (`student`)**: 8-axis HSSC Clinical Competency Radar, automated skill gap diagnostics ($W_{imp} \times (\text{Req} - \text{Cur})$), DigiLocker **ABC / APAAR** credit ledger sync, verifiable digital skill passport with **scannable ISO QR + `/verify` registry**, and 1-click applications.
    - **Industry Partners (`industry`)**: Weighted skill-based internship/job posting, candidate compatibility scoring, and real-time shortlisting/selection loop.
    - **Faculty (`faculty`)**: Clinical competency endorsement with cryptographic SHA-256/HMAC attestation signatures and Faculty Development Programs (FDPs).
    - **Institutions (`institution`)**: Student verification queue, NAAC/NIRF placement analytics, and institutional seals.

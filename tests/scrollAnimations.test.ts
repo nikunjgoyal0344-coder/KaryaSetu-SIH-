@@ -4,6 +4,8 @@ import {
   calculateScrollProgress,
   clampStaggerDelay,
   getRevealClassName,
+  getTaskbarDensity,
+  resolveActiveSectionId,
   type ScrollRevealVariant,
 } from '../lib/scrollUtils.ts';
 
@@ -53,4 +55,30 @@ test('getRevealClassName returns immediate visible classes under reduced motion 
       `Expected reduced-motion immediate visibility for ${variant}`
     );
   }
+});
+
+test('getTaskbarDensity adapts cleanly across mobile, tablet, and desktop breakpoints', () => {
+  assert.strictEqual(getTaskbarDensity(375), 'compact');
+  assert.strictEqual(getTaskbarDensity(639), 'compact');
+  assert.strictEqual(getTaskbarDensity(640), 'standard');
+  assert.strictEqual(getTaskbarDensity(1023), 'standard');
+  assert.strictEqual(getTaskbarDensity(1024), 'expanded');
+  assert.strictEqual(getTaskbarDensity(Number.NaN), 'compact');
+});
+
+test('resolveActiveSectionId resolves current scroll-spy section accurately', () => {
+  const sections = [
+    { id: 'hero-section', top: 0 },
+    { id: 'partners-section', top: 650 },
+    { id: 'gateways-section', top: 1100 },
+    { id: 'telemetry-section', top: 1850 },
+    { id: 'workflow-section', top: 2600 },
+  ];
+
+  assert.strictEqual(resolveActiveSectionId(sections, 0, 'hero-section'), 'hero-section');
+  assert.strictEqual(resolveActiveSectionId(sections, 800, 'hero-section'), 'partners-section');
+  assert.strictEqual(resolveActiveSectionId(sections, 2100, 'hero-section'), 'telemetry-section');
+  assert.strictEqual(resolveActiveSectionId(sections, 3200, 'hero-section'), 'workflow-section');
+  assert.strictEqual(resolveActiveSectionId([], 500, 'hero-section'), 'hero-section');
+  assert.strictEqual(resolveActiveSectionId(sections, Number.NaN, 'hero-section'), 'hero-section');
 });

@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useApp } from '@/lib/store';
+import QrCodeSvg from '@/components/QrCodeSvg';
 import {
   FileCheck2,
   CheckCircle2,
@@ -10,12 +12,12 @@ import {
   Building,
   Award,
   ShieldCheck,
-  QrCode,
   CreditCard,
   Sparkles,
   TrendingUp,
   Copy,
   Layers,
+  ExternalLink,
 } from 'lucide-react';
 
 interface Badge {
@@ -43,6 +45,7 @@ interface GeneratedProfile {
   improvementAreas: string[];
   portfolioSummary: string;
   digitalSignature: string;
+  verifyPath?: string;
   qrCodeUrl: string;
   abcCredits: number;
   totalVerifiedSkills: number;
@@ -109,8 +112,19 @@ export default function PortfolioPage() {
     }
   };
 
+  const verifyPath =
+    profile?.verifyPath ||
+    (profile?.digitalSignature
+      ? `/verify?studentId=${encodeURIComponent(profile.studentId)}&sig=${encodeURIComponent(profile.digitalSignature.slice(0, 26))}`
+      : '/verify');
+
+  const verifyFullUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}${verifyPath}`
+      : profile?.qrCodeUrl || verifyPath;
+
   const handleShareLink = () => {
-    const shareUrl = profile?.qrCodeUrl || 'https://karyasetu.gov.in/verify';
+    const shareUrl = verifyFullUrl;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl).catch(() => {});
     }
@@ -447,18 +461,33 @@ export default function PortfolioPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={handleCopySignature}
-                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                <span>{copied ? 'Copied!' : 'Copy Hash'}</span>
-              </button>
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopySignature}
+                  className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
+                >
+                  <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>{copied ? 'Copied!' : 'Copy Hash'}</span>
+                </button>
 
-              <div className="p-2 bg-white rounded-xl text-navy-950 shrink-0">
-                <QrCode className="w-8 h-8" />
+                <Link
+                  href={verifyPath}
+                  className="px-3 py-2 rounded-xl bg-saffron hover:bg-saffron-hover text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>Verify Live Passport</span>
+                </Link>
               </div>
+
+              <Link
+                href={verifyPath}
+                title="Open live cryptographic credential verification"
+                className="p-1.5 bg-white rounded-2xl shrink-0 hover:scale-105 transition-transform shadow-md"
+              >
+                <QrCodeSvg value={verifyFullUrl} size={96} label={`QR verification code for ${student.name}`} />
+              </Link>
             </div>
           </div>
         </div>

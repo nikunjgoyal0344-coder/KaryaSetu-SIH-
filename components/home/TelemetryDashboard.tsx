@@ -19,9 +19,10 @@ export default function TelemetryDashboard() {
 
   return (
     <section
+      id="telemetry-section"
       ref={telemetryRef}
       aria-labelledby="telemetry-heading"
-      className="w-full px-4 py-8 max-w-[1600px] mx-auto border-b border-slate-200 dark:border-slate-800"
+      className="scroll-mt-20 w-full px-4 py-8 max-w-[1600px] mx-auto border-b border-slate-200 dark:border-slate-800"
     >
       <ScrollReveal variant="fade-up" className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
         <div>
@@ -228,11 +229,39 @@ export default function TelemetryDashboard() {
                   </g>
                 ))}
 
-                <polygon fill="url(#moaSaffronGradient)" points="45,155 45,135 140,120 235,105 330,90 425,75 520,55 520,155" />
-                <path d="M 45 135 L 140 120 L 235 105 L 330 90 L 425 75 L 520 55" fill="none" stroke="#EA580C" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+                <polygon
+                  fill="url(#moaSaffronGradient)"
+                  points="45,155 45,135 140,120 235,105 330,90 425,75 520,55 520,155"
+                  className={`transition-opacity duration-700 ${metricsInView ? 'opacity-100' : 'opacity-0'}`}
+                />
+                <path
+                  d="M 45 135 L 140 120 L 235 105 L 330 90 L 425 75 L 520 55"
+                  fill="none"
+                  stroke="#EA580C"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2.5"
+                  strokeDasharray="600"
+                  strokeDashoffset={metricsInView ? 0 : 600}
+                  className="transition-[stroke-dashoffset] duration-1000 ease-out motion-reduce:transition-none"
+                />
 
-                <polygon fill="url(#placementNavyGradient)" points="45,155 45,125 140,105 235,80 330,62 425,42 520,26 520,155" />
-                <path d="M 45 125 L 140 105 L 235 80 L 330 62 L 425 42 L 520 26" fill="none" stroke="#102A45" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+                <polygon
+                  fill="url(#placementNavyGradient)"
+                  points="45,155 45,125 140,105 235,80 330,62 425,42 520,26 520,155"
+                  className={`transition-opacity duration-700 delay-150 ${metricsInView ? 'opacity-100' : 'opacity-0'}`}
+                />
+                <path
+                  d="M 45 125 L 140 105 L 235 80 L 330 62 L 425 42 L 520 26"
+                  fill="none"
+                  stroke="#102A45"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="3"
+                  strokeDasharray="600"
+                  strokeDashoffset={metricsInView ? 0 : 600}
+                  className="transition-[stroke-dashoffset] duration-1000 ease-out delay-150 motion-reduce:transition-none"
+                />
 
                 {[
                   { cx: 45, cy: 125, q: "Q3 '23" },
@@ -241,8 +270,12 @@ export default function TelemetryDashboard() {
                   { cx: 330, cy: 62, q: "Q2 '24" },
                   { cx: 425, cy: 42, q: "Q3 '24" },
                   { cx: 520, cy: 26, q: "Q4 '24 (Live)", live: true },
-                ].map(({ cx, cy, q, live }) => (
-                  <g key={q}>
+                ].map(({ cx, cy, q, live }, dotIdx) => (
+                  <g
+                    key={q}
+                    style={{ transitionDelay: `${Math.min(500, dotIdx * 80)}ms` }}
+                    className={`transition-opacity duration-500 ${metricsInView ? 'opacity-100' : 'opacity-0'}`}
+                  >
                     <circle
                       cx={cx}
                       cy={cy}

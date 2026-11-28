@@ -71,3 +71,47 @@ export function getRevealClassName(
   }
   return HIDDEN_VARIANT_CLASSES[variant] ?? HIDDEN_VARIANT_CLASSES['fade-up'];
 }
+
+export type TaskbarDensity = 'compact' | 'standard' | 'expanded';
+
+export interface SectionOffsetEntry {
+  id: string;
+  top: number;
+}
+
+/**
+ * Resolves adaptive floating taskbar density based on current viewport width.
+ */
+export function getTaskbarDensity(viewportWidth: number): TaskbarDensity {
+  if (!Number.isFinite(viewportWidth) || viewportWidth < 640) {
+    return 'compact';
+  }
+  if (viewportWidth < 1024) {
+    return 'standard';
+  }
+  return 'expanded';
+}
+
+/**
+ * Determines the active landing section ID based on scroll offset positions.
+ */
+export function resolveActiveSectionId(
+  sections: readonly SectionOffsetEntry[],
+  scrollMarkerY: number,
+  fallbackId: string
+): string {
+  if (!Array.isArray(sections) || sections.length === 0 || !Number.isFinite(scrollMarkerY)) {
+    return fallbackId;
+  }
+
+  let active = sections[0].id;
+  for (const section of sections) {
+    if (section.top <= scrollMarkerY) {
+      active = section.id;
+    } else {
+      break;
+    }
+  }
+  return active;
+}
+

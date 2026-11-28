@@ -5,7 +5,7 @@ import { Network } from 'lucide-react';
 
 export default function WorkflowBanner() {
   return (
-    <section className="w-full px-4 py-6 max-w-[1600px] mx-auto" aria-labelledby="workflow-banner-heading">
+    <section id="workflow-section" className="scroll-mt-20 w-full px-4 py-6 max-w-[1600px] mx-auto" aria-labelledby="workflow-banner-heading">
       <ScrollReveal variant="zoom-in">
         <div className="bg-navy-900 text-white rounded-2xl p-8 relative overflow-hidden shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-navy-700">
           <div className="absolute -right-16 -top-16 w-96 h-96 bg-navy-700/30 rounded-full blur-3xl pointer-events-none" />

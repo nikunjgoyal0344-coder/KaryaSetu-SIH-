@@ -28,8 +28,9 @@ export default function PartnerMarquee() {
   return (
     <ScrollReveal variant="fade-up">
       <section
+        id="partners-section"
         aria-label="Trusted National Ecosystem Partners"
-        className="w-full py-6 bg-slate-100 dark:bg-slate-900/60 border-y border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-2xs"
+        className="scroll-mt-20 w-full py-6 bg-slate-100 dark:bg-slate-900/60 border-y border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-2xs"
       >
         <div className="max-w-[1600px] mx-auto px-4 mb-3 text-center">
           <span className="text-xs font-mono uppercase text-slate-700 dark:text-slate-300 font-bold tracking-wider">

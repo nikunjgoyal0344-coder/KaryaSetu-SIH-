@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import ScrollDownCue from '@/components/home/ScrollDownCue';
 import { ArrowRight, Network, CheckCircle2, ShieldCheck, Award, Lock } from 'lucide-react';
 
 const HERO_COUNTERS = [
@@ -18,7 +19,7 @@ const PASSPORT_BADGES = [
 
 export default function HeroSection() {
   return (
-    <section className="w-full pt-4 pb-6 max-w-[1600px] mx-auto" aria-labelledby="hero-heading">
+    <section id="hero-section" className="scroll-mt-20 w-full pt-4 pb-6 max-w-[1600px] mx-auto" aria-labelledby="hero-heading">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Left Column: National Directive & Actions */}
         <div className="lg:col-span-7 flex flex-col items-start gap-4">
@@ -173,7 +174,7 @@ export default function HeroSection() {
               {PASSPORT_BADGES.map(({ title, subtitle, Icon }) => (
                 <div
                   key={title}
-                  className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700 flex flex-col items-center gap-0.5"
+                  className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700 flex flex-col items-center gap-0.5 hover:border-saffron/50 hover:-translate-y-0.5 transition-all"
                 >
                   <Icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                   <span className="font-bold text-navy-900 dark:text-slate-200">{title}</span>
@@ -184,6 +185,9 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
+
+      {/* Scroll-Down Micro Indicator */}
+      <ScrollDownCue targetId="partners-section" />
     </section>
   );
 }
